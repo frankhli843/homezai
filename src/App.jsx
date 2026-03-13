@@ -7,12 +7,12 @@ function App() {
       <nav className="navbar">
         <div className="nav-container">
           <a href="#" className="nav-logo">
-            <svg className="logo-icon" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="16" cy="16" r="16" fill="#2563EB"/>
-              <path d="M10 20V14L16 10L22 14V20L16 24L10 20Z" fill="white" stroke="white" strokeWidth="1"/>
-              <path d="M16 10V24" stroke="#2563EB" strokeWidth="1.5"/>
-              <path d="M10 14L22 20" stroke="#2563EB" strokeWidth="1"/>
-              <path d="M22 14L10 20" stroke="#2563EB" strokeWidth="1"/>
+            <svg className="logo-icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="18" cy="18" r="18" fill="#3B6CF6"/>
+              <path d="M12 22V16L18 12L24 16V22L18 26L12 22Z" fill="white"/>
+              <path d="M18 12V26" stroke="#3B6CF6" strokeWidth="1.5"/>
+              <path d="M12 16L24 22" stroke="#3B6CF6" strokeWidth="1"/>
+              <path d="M24 16L12 22" stroke="#3B6CF6" strokeWidth="1"/>
             </svg>
             <span className="logo-text">homezai</span>
           </a>
@@ -26,7 +26,7 @@ function App() {
           </div>
           <div className="nav-right">
             <a href="#support" className="nav-support">Support</a>
-            <a href="#contact" className="btn btn-primary nav-cta">Talk to Sales</a>
+            <a href="#contact" className="btn btn-primary btn-pill nav-cta">Talk to Sales</a>
           </div>
         </div>
       </nav>
@@ -45,21 +45,135 @@ function App() {
               integrations—all under your brand.
             </p>
             <div className="hero-actions">
-              <a href="#demo" className="btn btn-primary btn-lg">
+              <a href="#demo" className="btn btn-primary">
                 Schedule a Demo <span className="arrow">→</span>
               </a>
-              <a href="#features" className="btn btn-outline btn-lg">
+              <a href="#features" className="btn btn-outline">
                 Learn More
               </a>
             </div>
           </div>
+
+          {/* Hero Collage - CSS mockups matching Figma */}
           <div className="hero-image">
             <div className="hero-collage">
-              <img src="/images/hero-collage.png" alt="Homezai platform screenshots showing maps, property listings, scheduling, and AI assistant" />
+              {/* Panel 1: Property Search */}
+              <div className="mockup-card mockup-search">
+                <div className="mockup-header">
+                  <span className="mockup-header-text">ShowingsPro</span>
+                  <div className="mockup-dots">
+                    <span className="mockup-dot"></span>
+                    <span className="mockup-dot"></span>
+                    <span className="mockup-dot"></span>
+                  </div>
+                </div>
+                <div className="mockup-body">
+                  <div className="mockup-search-bar">
+                    <span className="search-icon">🔍</span>
+                    <span>Search by address, city, or...</span>
+                  </div>
+                  <div className="mockup-filters">
+                    <span className="mockup-filter-pill">Property Type</span>
+                    <span className="mockup-filter-pill">All Types</span>
+                    <span className="mockup-filter-pill">All Status</span>
+                  </div>
+                  <div className="mockup-property-card">
+                    <div className="property-img"></div>
+                    <div className="property-info">
+                      <div className="property-price">$425,000</div>
+                      <div className="property-address">123 Maple Street, Springfield, IL 62701</div>
+                      <div className="property-details">
+                        <span>🛏 3 beds</span>
+                        <span>🛁 2 baths</span>
+                        <span>📐 1,850 sqft</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Panel 2: AI Assistant */}
+              <div className="mockup-card mockup-chat">
+                <div className="chat-header">
+                  <span>AI Assistant</span>
+                  <span className="chat-close">✕</span>
+                </div>
+                <div className="chat-body">
+                  <div className="chat-bubble">
+                    Hi! I'm your AI assistant. I can help you schedule showings, manage listings, and answer property questions.
+                  </div>
+                  <div className="chat-input">
+                    <span>Type a message...</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Panel 3: Schedule View */}
+              <div className="mockup-card mockup-schedule">
+                <div className="mockup-header">
+                  <span className="mockup-header-text">ShowingsPro</span>
+                  <div className="mockup-dots">
+                    <span className="mockup-dot"></span>
+                    <span className="mockup-dot"></span>
+                    <span className="mockup-dot"></span>
+                  </div>
+                </div>
+                <div className="schedule-body">
+                  <div className="schedule-item">
+                    <span className="schedule-time">9:00 AM</span>
+                    <span className="schedule-dot confirmed"></span>
+                    <span className="schedule-label">123 Oak Ave - Confirmed</span>
+                  </div>
+                  <div className="schedule-item">
+                    <span className="schedule-time">10:30 AM</span>
+                    <span className="schedule-dot scheduled"></span>
+                    <span className="schedule-label">456 Pine Rd - Scheduled</span>
+                  </div>
+                  <div className="schedule-item">
+                    <span className="schedule-time">1:00 PM</span>
+                    <span className="schedule-dot confirmed"></span>
+                    <span className="schedule-label">789 Elm St - Confirmed</span>
+                  </div>
+                  <div className="schedule-item">
+                    <span className="schedule-time">3:00 PM</span>
+                    <span className="schedule-dot completed"></span>
+                    <span className="schedule-label">321 Birch Ln - Completed</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Panel 4: Map View */}
+              <div className="mockup-card mockup-map">
+                <div className="mockup-header">
+                  <span className="mockup-header-text">Route Map</span>
+                  <div className="mockup-dots">
+                    <span className="mockup-dot"></span>
+                    <span className="mockup-dot"></span>
+                    <span className="mockup-dot"></span>
+                  </div>
+                </div>
+                <div className="map-area">
+                  <div className="map-pin green" style={{top: '20px', left: '30px'}}>1</div>
+                  <div className="map-pin purple" style={{top: '50px', left: '80px'}}>2</div>
+                  <div className="map-pin green" style={{top: '30px', left: '140px'}}>3</div>
+                  <div className="map-pin orange" style={{top: '70px', left: '180px'}}>4</div>
+                  <div className="map-pin green" style={{top: '90px', left: '60px'}}>5</div>
+                  <div className="map-legend">
+                    <div className="legend-title">Map Legend</div>
+                    <div className="legend-item"><span className="legend-dot" style={{background: 'var(--purple)'}}></span> Scheduled</div>
+                    <div className="legend-item"><span className="legend-dot" style={{background: 'var(--green)'}}></span> Confirmed</div>
+                    <div className="legend-item"><span className="legend-dot" style={{background: 'var(--orange)'}}></span> Completed</div>
+                    <div className="legend-item"><span className="legend-dot" style={{background: 'var(--red)'}}></span> Cancelled</div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
+
+      {/* Subtle decoration between sections */}
+      <div className="hero-decoration"></div>
 
       {/* Features Section */}
       <section id="features" className="features">
@@ -72,7 +186,7 @@ function App() {
           <div className="features-grid">
             <div className="feature-card">
               <div className="feature-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
                   <line x1="16" y1="2" x2="16" y2="6"/>
                   <line x1="8" y1="2" x2="8" y2="6"/>
@@ -84,7 +198,7 @@ function App() {
             </div>
             <div className="feature-card">
               <div className="feature-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
                   <circle cx="12" cy="10" r="3"/>
                 </svg>
@@ -94,7 +208,7 @@ function App() {
             </div>
             <div className="feature-card">
               <div className="feature-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                 </svg>
               </div>
@@ -103,7 +217,7 @@ function App() {
             </div>
             <div className="feature-card">
               <div className="feature-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                 </svg>
               </div>
@@ -112,7 +226,7 @@ function App() {
             </div>
             <div className="feature-card">
               <div className="feature-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
                   <line x1="8" y1="21" x2="16" y2="21"/>
                   <line x1="12" y1="17" x2="12" y2="21"/>
@@ -123,11 +237,11 @@ function App() {
             </div>
             <div className="feature-card">
               <div className="feature-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
                 </svg>
               </div>
-              <h3>Analytics & Insights</h3>
+              <h3>Analytics &amp; Insights</h3>
               <p>Comprehensive analytics on showing performance, client engagement, and market trends to help you make data-driven decisions.</p>
             </div>
           </div>
@@ -138,6 +252,9 @@ function App() {
       <section id="benefits" className="benefits">
         <div className="section-container">
           <h2 className="section-title">Why Real Estate Teams Choose Homezai</h2>
+          <p className="section-subtitle">
+            See the measurable impact Homezai delivers to real estate teams across North America.
+          </p>
           <div className="benefits-grid">
             <div className="benefit-item">
               <div className="benefit-stat">75%</div>
@@ -172,7 +289,7 @@ function App() {
             CRMs, and real estate platforms.
           </p>
           <div className="integrations-logos">
-            <div className="integration-logo">MLS</div>
+            <div className="integration-logo">MLS Systems</div>
             <div className="integration-logo">Salesforce</div>
             <div className="integration-logo">Google Calendar</div>
             <div className="integration-logo">Outlook</div>
@@ -228,7 +345,7 @@ function App() {
         </div>
       </section>
 
-      {/* Demo / CTA Section */}
+      {/* CTA Section */}
       <section id="demo" className="cta-section">
         <div className="section-container">
           <h2 className="section-title light">Ready to Transform Your Showings?</h2>
@@ -236,7 +353,7 @@ function App() {
             Join hundreds of real estate teams already using Homezai to streamline their showing operations.
           </p>
           <div className="cta-actions">
-            <a href="#contact" className="btn btn-white btn-lg">Schedule a Demo →</a>
+            <a href="#contact" className="btn btn-white">Schedule a Demo →</a>
           </div>
         </div>
       </section>
@@ -247,12 +364,12 @@ function App() {
           <div className="footer-grid">
             <div className="footer-brand">
               <a href="#" className="nav-logo">
-                <svg className="logo-icon" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="16" cy="16" r="16" fill="#2563EB"/>
-                  <path d="M10 20V14L16 10L22 14V20L16 24L10 20Z" fill="white" stroke="white" strokeWidth="1"/>
-                  <path d="M16 10V24" stroke="#2563EB" strokeWidth="1.5"/>
-                  <path d="M10 14L22 20" stroke="#2563EB" strokeWidth="1"/>
-                  <path d="M22 14L10 20" stroke="#2563EB" strokeWidth="1"/>
+                <svg className="logo-icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="18" cy="18" r="18" fill="#3B6CF6"/>
+                  <path d="M12 22V16L18 12L24 16V22L18 26L12 22Z" fill="white"/>
+                  <path d="M18 12V26" stroke="#3B6CF6" strokeWidth="1.5"/>
+                  <path d="M12 16L24 22" stroke="#3B6CF6" strokeWidth="1"/>
+                  <path d="M24 16L12 22" stroke="#3B6CF6" strokeWidth="1"/>
                 </svg>
                 <span className="logo-text">homezai</span>
               </a>
@@ -263,7 +380,7 @@ function App() {
               <a href="#features">Features</a>
               <a href="#pricing">Pricing</a>
               <a href="#integrations">Integrations</a>
-              <a href="#demo">Demo</a>
+              <a href="#demo">Request Demo</a>
             </div>
             <div className="footer-links-group">
               <h4>Company</h4>
@@ -281,7 +398,7 @@ function App() {
             </div>
           </div>
           <div className="footer-bottom">
-            <p>© 2026 Homezai. All rights reserved.</p>
+            <p>&copy; 2026 Homezai. All rights reserved.</p>
           </div>
         </div>
       </footer>
