@@ -883,17 +883,20 @@ body {
   }
 
   .nav-cta {
-    padding: 6px 14px !important;
-    font-size: 0.75rem !important;
+    padding: 6px 12px !important;
+    font-size: 0.7rem !important;
     white-space: nowrap;
+    min-width: auto !important;
+    line-height: 1.2;
   }
 
   .nav-support {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
+    padding: 4px 8px;
   }
 
   .logo-img {
-    height: 28px;
+    height: 26px;
   }
 
   .nav-container {
@@ -926,6 +929,30 @@ body {
 
   .features-grid {
     grid-template-columns: 1fr;
+  }
+
+  .feature-card {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 20px;
+  }
+
+  .feature-icon {
+    margin-bottom: 0;
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+  }
+
+  .feature-card h3 {
+    font-size: 1rem;
+    margin-bottom: 6px;
+  }
+
+  .feature-card p {
+    font-size: 0.85rem;
   }
 
   .benefits-grid {
