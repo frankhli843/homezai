@@ -183,12 +183,12 @@ function HomePage() {
         <div className="section-container">
           <h2 className="section-title">See the Platform in Action</h2>
           <p className="section-subtitle">
-            ShowingsPro by Homezai combines powerful property search, AI-driven assistance,
+            Showzy by Homezai combines powerful property search, AI-driven assistance,
             and intelligent route mapping in one seamless experience.
           </p>
           <div className="showcase-images">
             <div className="showcase-item">
-              <img src={`${BASE}images/hero-showingspro.png`} alt="ShowingsPro mobile app showing property search, AI assistant, and map routing" />
+              <img src={`${BASE}images/hero-showingspro.png`} alt="Showzy mobile app showing property search, AI assistant, and map routing" />
               <h3>Mobile-First Design</h3>
               <p>Property search, AI assistant, and map routing — all optimized for agents on the go.</p>
             </div>
