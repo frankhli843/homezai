@@ -607,7 +607,7 @@ body {
 
 .footer-grid {
   display: grid;
-  grid-template-columns: 1.5fr 1fr 1fr 1fr;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr 1fr;
   gap: 48px;
   margin-bottom: 56px;
 }
@@ -809,6 +809,98 @@ body {
   flex-wrap: wrap;
 }
 
+/* ===== Legal Pages ===== */
+.legal-page {
+  min-height: 60vh;
+}
+
+.legal-hero {
+  padding: 80px 0 40px;
+  background: linear-gradient(180deg, var(--primary-50) 0%, var(--white) 100%);
+}
+
+.legal-updated {
+  text-align: center;
+  color: var(--text-body);
+  font-size: 0.95rem;
+  margin-top: 8px;
+}
+
+.legal-content {
+  padding: 0 0 100px;
+}
+
+.legal-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.legal-container h2 {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text-heading);
+  margin-top: 36px;
+  margin-bottom: 12px;
+}
+
+.legal-container h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-heading);
+  margin-top: 24px;
+  margin-bottom: 8px;
+}
+
+.legal-container p {
+  font-size: 0.95rem;
+  color: var(--text-body);
+  line-height: 1.75;
+  margin-bottom: 12px;
+}
+
+.legal-container ul {
+  margin: 0 0 16px 24px;
+  padding: 0;
+}
+
+.legal-container li {
+  font-size: 0.95rem;
+  color: var(--text-body);
+  line-height: 1.75;
+  margin-bottom: 4px;
+}
+
+.legal-container a {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.legal-container a:hover {
+  text-decoration: underline;
+}
+
+.legal-container strong {
+  color: var(--text-heading);
+}
+
+/* ===== Enterprise Pricing ===== */
+.pricing-enterprise {
+  display: flex;
+  justify-content: center;
+}
+
+.enterprise-card {
+  max-width: 480px;
+  width: 100%;
+}
+
+.enterprise-desc {
+  font-size: 1rem;
+  color: var(--text-body);
+  margin-bottom: 24px;
+  text-align: center;
+}
+
 /* ===== Responsive ===== */
 @media (max-width: 1024px) {
   .hero-container {
@@ -855,7 +947,7 @@ body {
   }
 
   .footer-grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
   }
 }
 
