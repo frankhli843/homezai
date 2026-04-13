@@ -1,5 +1,5 @@
-import { Routes, Route, Link, useLocation } from 'react-router-dom'
-import { useEffect } from 'react'
+import { Routes, Route, Link, useLocation, Navigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
 import './App.css'
 
 const BASE = import.meta.env.BASE_URL
@@ -28,14 +28,14 @@ function Navbar() {
         <div className="nav-links">
           <Link to="/#features">Features</Link>
           <Link to="/#benefits">Benefits</Link>
-          <Link to="/#integrations">Integrations</Link>
-          <Link to="/#pricing">Pricing</Link>
+          <Link to="/integrations">Integrations</Link>
+          <Link to="/pricing">Pricing</Link>
           <Link to="/#demo">Demo</Link>
-          <a href="https://app.homezai.com" target="_blank" rel="noopener noreferrer">Login</a>
+          <Link to="/support">Support</Link>
         </div>
         <div className="nav-right">
-          <Link to="/support" className="nav-support">Support</Link>
-          <a href="mailto:contact@homezai.com" className="btn btn-primary btn-pill nav-cta">Talk to Sales</a>
+          <a href="https://app.homezai.com" target="_blank" rel="noopener noreferrer" className="nav-login">Login</a>
+          <Link to="/pricing#quote-form" className="btn btn-primary btn-pill nav-cta">Get a Quote</Link>
         </div>
         <button className="mobile-menu-btn" onClick={() => {
           document.querySelector('.nav-links').classList.toggle('mobile-open')
@@ -54,39 +54,46 @@ function Footer() {
             <Link to="/" className="nav-logo">
               <img src={`${BASE}images/homezai-logo.png`} alt="Homezai" className="logo-img logo-img-light" />
             </Link>
-            <p className="footer-tagline">AI-powered showing management for modern real estate teams.</p>
-            <div className="footer-contact-info">
-              <p>📍 255 Alhambra Circle Suite 700<br/>Coral Gables, FL 33134 USA</p>
-              <p>📧 <a href="mailto:contact@homezai.com">contact@homezai.com</a></p>
-              <p>📞 <a href="tel:+15024340605">+1-502-434-0605</a></p>
-            </div>
+            <p className="footer-tagline">AI real estate showings software with intelligent appointment scheduling for the modern real estate professional.</p>
           </div>
           <div className="footer-links-group">
             <h4>Product</h4>
             <Link to="/#features">Features</Link>
-            <Link to="/#pricing">Pricing</Link>
-            <Link to="/#integrations">Integrations</Link>
-            <Link to="/#demo">Request Demo</Link>
+            <Link to="/pricing">Pricing</Link>
+            <Link to="/integrations">Integrations</Link>
+            <Link to="/#demo">Schedule a Demo</Link>
+            <Link to="/#demo">Talk to Sales</Link>
           </div>
           <div className="footer-links-group">
             <h4>Company</h4>
+            <Link to="/">Home</Link>
             <a href="#">About</a>
             <a href="#">Careers</a>
-            <a href="#">Blog</a>
             <a href="mailto:contact@homezai.com">Contact</a>
-          </div>
-          <div className="footer-links-group">
-            <h4>Support</h4>
-            <Link to="/support">Help Center</Link>
-            <a href="#">Documentation</a>
-            <a href="#">Status</a>
+            <Link to="/support">Support</Link>
+            <a href="https://app.homezai.com" target="_blank" rel="noopener noreferrer">Login</a>
           </div>
           <div className="footer-links-group">
             <h4>Legal</h4>
-            <Link to="/terms">Terms of Service</Link>
             <Link to="/privacy">Privacy Policy</Link>
+            <Link to="/terms">Terms of Service</Link>
+            <Link to="/dpa">Data Processing (DPA)</Link>
             <Link to="/accessibility">Accessibility</Link>
-            <Link to="/dpa">DPA</Link>
+          </div>
+        </div>
+        <div className="footer-contact-row">
+          <div className="footer-contact-item">
+            <h5>Address</h5>
+            <p>255 Alhambra Circle Ste 700</p>
+            <p>Coral Gables, FL 34134</p>
+          </div>
+          <div className="footer-contact-item">
+            <h5>Phone</h5>
+            <p>1-502-434-0605</p>
+          </div>
+          <div className="footer-contact-item">
+            <h5>Email</h5>
+            <p><a href="mailto:Info@Homezai.com">Info@Homezai.com</a></p>
           </div>
         </div>
         <div className="footer-bottom">
@@ -278,7 +285,7 @@ function HomePage() {
                 <li>SLA guarantee</li>
                 <li>Priority onboarding &amp; training</li>
               </ul>
-              <a href="mailto:contact@homezai.com" className="btn btn-primary">Contact Sales</a>
+              <Link to="/pricing" className="btn btn-primary">View Pricing Plans</Link>
             </div>
           </div>
         </div>
@@ -301,77 +308,234 @@ function HomePage() {
 }
 
 /* ===== Support Page ===== */
+function FaqItem({ question }) {
+  const [open, setOpen] = useState(false)
+  const answers = {
+    "How does Homezai's AI scheduling work?": "Homezai uses advanced AI to automatically match showing requests with agent availability, optimize routes for multiple properties, and send automated confirmations and reminders to all parties involved.",
+    "Can I use my own branding with Homezai?": "Yes! Homezai is fully white-labeled. You can customize the platform with your logo, colors, domain, and branding so your clients never see the Homezai name.",
+    "Which MLS and CRM systems does Homezai integrate with?": "Homezai integrates with major MLS systems including CincyMLS, Dayton Realtors, and NKAR, as well as CRM platforms like BoldTrail and Moxiworks. We're continuously adding new integrations.",
+    "How do I optimize routes for multiple property showings?": "Our AI-powered routing engine automatically calculates the most efficient route between multiple properties, considering travel time, showing duration, and agent availability.",
+    "Who owns the data in Homezai?": "You own your data. Homezai provides full data export capabilities, and you maintain complete control over your information at all times.",
+    "How much does Homezai cost?": "Homezai offers custom pricing based on your organization's size and needs. Contact our sales team for a tailored pricing proposal.",
+    "Can I try Homezai before purchasing?": "Yes! We offer personalized demos and pilot programs. Contact our sales team to discuss the best option for your organization.",
+    "What kind of support does Homezai provide?": "We offer email support, phone support (Mon-Fri, 9 AM - 6 PM EST), dedicated account management for enterprise customers, and comprehensive training resources.",
+    "How long does it take to set up Homezai?": "Most organizations are up and running within 48 hours. Our onboarding team handles the setup, integration configuration, and white-label branding for you.",
+    "Is my data secure with Homezai?": "Absolutely. Homezai is hosted on Amazon Web Services (AWS) with enterprise-grade security, encryption at rest and in transit, and regular security audits."
+  }
+  return (
+    <div className="faq-accordion-item">
+      <button className={`faq-accordion-btn${open ? ' open' : ''}`} onClick={() => setOpen(!open)}>
+        <span>{question}</span>
+        <span className="faq-chevron">{open ? '−' : '+'}</span>
+      </button>
+      {open && <div className="faq-accordion-content"><p>{answers[question]}</p></div>}
+    </div>
+  )
+}
+
 function SupportPage() {
+  useEffect(() => { document.title = 'Support - Homezai' }, [])
+  const trainingVideos = [
+    { title: "Getting Started with Homezai", desc: "Learn the basics of setting up your Homezai account and managing your first showing.", duration: "5:32", category: "Getting Started", img: "https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=800&q=80" },
+    { title: "Intelligent Appointment Scheduling", desc: "Master our AI-powered scheduling system to automate your showing appointments.", duration: "8:15", category: "Features", img: "https://images.unsplash.com/photo-1551434678-e076c223a692?w=800&q=80" },
+    { title: "Multi-Property Routing Optimization", desc: "Optimize routes for multiple property showings to save time and maximize efficiency.", duration: "6:45", category: "Features", img: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&q=80" },
+    { title: "White Label Customization", desc: "Customize Homezai with your branding for associations, brokerages, and teams.", duration: "7:20", category: "Customization", img: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=800&q=80" },
+    { title: "MLS & CRM Integrations", desc: "Connect Homezai to your existing MLS and CRM systems for seamless data flow.", duration: "9:10", category: "Integrations", img: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=80" },
+    { title: "Data Management & Ownership", desc: "Understand how to manage, export, and maintain control over your data.", duration: "5:55", category: "Data & Security", img: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&q=80" },
+  ]
+  const articles = {
+    "Getting Started": [
+      { title: "Creating Your First Account", time: "3 min" },
+      { title: "Setting Up Your Profile", time: "2 min" },
+      { title: "Inviting Team Members", time: "4 min" },
+      { title: "Understanding the Dashboard", time: "5 min" },
+    ],
+    "Scheduling & Appointments": [
+      { title: "How to Schedule a Showing", time: "3 min" },
+      { title: "Automated Appointment Reminders", time: "4 min" },
+      { title: "Managing Availability", time: "3 min" },
+      { title: "Rescheduling and Cancellations", time: "2 min" },
+    ],
+    "Integrations": [
+      { title: "Connecting Your MLS", time: "6 min" },
+      { title: "CRM Integration Setup", time: "7 min" },
+      { title: "Calendar Sync (Google, Outlook, Apple)", time: "4 min" },
+      { title: "Troubleshooting Integration Issues", time: "5 min" },
+    ],
+    "Team Management": [
+      { title: "Adding and Removing Agents", time: "3 min" },
+      { title: "Setting Permissions and Roles", time: "5 min" },
+      { title: "Team Performance Analytics", time: "6 min" },
+      { title: "White Label Branding for Teams", time: "4 min" },
+    ],
+  }
+  const faqQuestions = [
+    "How does Homezai's AI scheduling work?",
+    "Can I use my own branding with Homezai?",
+    "Which MLS and CRM systems does Homezai integrate with?",
+    "How do I optimize routes for multiple property showings?",
+    "Who owns the data in Homezai?",
+    "How much does Homezai cost?",
+    "Can I try Homezai before purchasing?",
+    "What kind of support does Homezai provide?",
+    "How long does it take to set up Homezai?",
+    "Is my data secure with Homezai?",
+  ]
   return (
     <div className="support-page">
+      {/* Hero */}
       <section className="support-hero">
         <div className="section-container">
-          <h1 className="section-title">Support &amp; Help Center</h1>
-          <p className="section-subtitle">
-            We're here to help. Reach out to our team for any questions about Homezai.
-          </p>
+          <span className="hero-badge">We're Here to Help</span>
+          <h1 className="section-title">Homezai Support Center</h1>
+          <p className="section-subtitle">Find answers, learn best practices, and get help from our support team</p>
+          <div className="support-nav-cards">
+            <a href="#videos" className="support-nav-card">
+              <div className="support-nav-icon">🎬</div>
+              <h3>Training Videos</h3>
+            </a>
+            <a href="#articles" className="support-nav-card">
+              <div className="support-nav-icon">📄</div>
+              <h3>Support Articles</h3>
+            </a>
+            <a href="#faqs" className="support-nav-card">
+              <div className="support-nav-icon">❓</div>
+              <h3>FAQs</h3>
+            </a>
+            <a href="#contact" className="support-nav-card">
+              <div className="support-nav-icon">💬</div>
+              <h3>Contact Support</h3>
+            </a>
+          </div>
         </div>
       </section>
 
-      <section className="support-content">
+      {/* Training Videos */}
+      <section id="videos" className="support-section">
         <div className="section-container">
-          <div className="support-grid">
-            <div className="support-card">
-              <div className="support-icon">📧</div>
-              <h3>Email Us</h3>
-              <p>For general inquiries, sales questions, or technical support.</p>
-              <a href="mailto:contact@homezai.com" className="support-link">contact@homezai.com</a>
-            </div>
-            <div className="support-card">
-              <div className="support-icon">📞</div>
-              <h3>Call Us</h3>
-              <p>Speak directly with our team during business hours (Mon–Fri, 9 AM – 6 PM EST).</p>
-              <a href="tel:+15024340605" className="support-link">+1-502-434-0605</a>
-            </div>
-            <div className="support-card">
-              <div className="support-icon">📍</div>
-              <h3>Visit Us</h3>
-              <p>Our office is located in the heart of Coral Gables, Florida.</p>
-              <span className="support-link">255 Alhambra Circle Suite 700<br/>Coral Gables, FL 33134 USA</span>
-            </div>
+          <h2 className="section-title">Training Videos</h2>
+          <p className="section-subtitle">Step-by-step video guides to help you master Homezai</p>
+          <div className="video-grid">
+            {trainingVideos.map((v, i) => (
+              <div className="video-card" key={i}>
+                <div className="video-thumb">
+                  <img src={v.img} alt={v.title} />
+                  <span className="video-duration">{v.duration}</span>
+                  <span className="video-category">{v.category}</span>
+                </div>
+                <h3>{v.title}</h3>
+                <p>{v.desc}</p>
+              </div>
+            ))}
           </div>
+        </div>
+      </section>
 
-          <div className="support-faq">
-            <h2>Frequently Asked Questions</h2>
-            <div className="faq-grid">
-              <div className="faq-item">
-                <h3>How do I get started with Homezai?</h3>
-                <p>Schedule a demo with our team and we'll walk you through the platform, set up your account, and configure your white-label branding. Most teams are up and running within 48 hours.</p>
+      {/* Support Articles */}
+      <section id="articles" className="support-section support-section-alt">
+        <div className="section-container">
+          <h2 className="section-title">Support Articles</h2>
+          <p className="section-subtitle">Comprehensive guides and documentation</p>
+          <div className="articles-grid">
+            {Object.entries(articles).map(([category, items]) => (
+              <div className="articles-column" key={category}>
+                <h3>{category}</h3>
+                <ul>
+                  {items.map((a, i) => (
+                    <li key={i}>
+                      <a href="#">
+                        <span>{a.title}</span>
+                        <span className="article-time">{a.time}</span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <div className="faq-item">
-                <h3>Does Homezai integrate with my MLS?</h3>
-                <p>Yes! Homezai integrates with major MLS systems across North America. Contact us to confirm compatibility with your specific MLS.</p>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section id="faqs" className="support-section">
+        <div className="section-container">
+          <h2 className="section-title">Frequently Asked Questions</h2>
+          <p className="section-subtitle">Quick answers to common questions</p>
+          <div className="faq-accordion">
+            {faqQuestions.map((q, i) => <FaqItem key={i} question={q} />)}
+          </div>
+        </div>
+      </section>
+
+      {/* Contact Form */}
+      <section id="contact" className="support-section support-section-alt">
+        <div className="section-container">
+          <h2 className="section-title">Send a Support Request</h2>
+          <p className="section-subtitle">Can't find what you're looking for? We're here to help!</p>
+          <form className="support-form" onSubmit={e => e.preventDefault()}>
+            <div className="form-row">
+              <div className="form-group">
+                <label>Full Name *</label>
+                <input type="text" placeholder="Full Name" required />
               </div>
-              <div className="faq-item">
-                <h3>Is the platform white-labeled?</h3>
-                <p>Absolutely. Homezai operates entirely under your brokerage brand — your logo, colors, and domain. Your clients never see the Homezai name.</p>
-              </div>
-              <div className="faq-item">
-                <h3>What kind of support do you offer?</h3>
-                <p>We offer email support for all plans, priority support for Professional plans, and dedicated account management for Enterprise customers.</p>
-              </div>
-              <div className="faq-item">
-                <h3>Can I try Homezai before committing?</h3>
-                <p>Yes — we offer personalized demos and pilot programs. Contact our sales team to discuss the best option for your team.</p>
-              </div>
-              <div className="faq-item">
-                <h3>How does the AI assistant work?</h3>
-                <p>Our AI assistant uses natural language processing to handle showing requests, answer property questions, manage schedules, and automate follow-ups — 24/7, under your brand.</p>
+              <div className="form-group">
+                <label>Email Address *</label>
+                <input type="email" placeholder="Email Address" required />
               </div>
             </div>
-          </div>
+            <div className="form-row">
+              <div className="form-group">
+                <label>Category *</label>
+                <select required defaultValue="">
+                  <option value="" disabled>Select a category</option>
+                  <option>Technical Issue</option>
+                  <option>Billing &amp; Payment</option>
+                  <option>Integration Support</option>
+                  <option>Training &amp; Onboarding</option>
+                  <option>Feature Request</option>
+                  <option>Other</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Priority</label>
+                <select defaultValue="Medium">
+                  <option>Low</option>
+                  <option>Medium</option>
+                  <option>High</option>
+                  <option>Urgent</option>
+                </select>
+              </div>
+            </div>
+            <div className="form-group">
+              <label>Subject *</label>
+              <input type="text" placeholder="Subject" required />
+            </div>
+            <div className="form-group">
+              <label>Message *</label>
+              <textarea placeholder="Describe your issue or question..." rows="5" required></textarea>
+            </div>
+            <p className="form-note">Our support team typically responds within 24 hours during business days. For urgent issues, please call us at 1-502-434-0605.</p>
+            <button type="submit" className="btn btn-primary btn-full">Submit Support Request</button>
+          </form>
+        </div>
+      </section>
 
-          <div className="support-cta">
-            <h2>Still have questions?</h2>
-            <p>Our team is ready to help you get the most out of Homezai.</p>
-            <div className="support-cta-buttons">
-              <a href="mailto:contact@homezai.com" className="btn btn-primary">Contact Sales</a>
-              <a href="tel:+15024340605" className="btn btn-outline">Call +1-502-434-0605</a>
+      {/* Contact Cards */}
+      <section className="support-contact-cards">
+        <div className="section-container">
+          <div className="contact-cards-grid">
+            <div className="contact-card-item">
+              <h4>Email Support</h4>
+              <a href="mailto:Info@Homezai.com">Info@Homezai.com</a>
+            </div>
+            <div className="contact-card-item">
+              <h4>Phone Support</h4>
+              <p>1-502-434-0605</p>
+              <p className="contact-detail">Mon-Fri, 9 AM - 6 PM EST</p>
+            </div>
+            <div className="contact-card-item">
+              <h4>Schedule a Call</h4>
+              <Link to="/#demo">Book a time slot</Link>
             </div>
           </div>
         </div>
@@ -774,6 +938,291 @@ function DpaPage() {
   )
 }
 
+/* ===== Pricing Page ===== */
+function PricingPage() {
+  useEffect(() => { document.title = 'Plans and Pricing - Homezai' }, [])
+  const [showMoreBrokerage, setShowMoreBrokerage] = useState(false)
+  const [showMoreEnterprise, setShowMoreEnterprise] = useState(false)
+  const brokerageFeatures = [
+    { title: "Unlimited Showings", desc: "Schedule and manage unlimited property showings with no restrictions." },
+    { title: "AI-Powered Scheduling", desc: "Intelligent appointment scheduling that optimizes routes automatically." },
+    { title: "White Label Branding", desc: "Fully branded to your brokerage with your logo and colors." },
+    { title: "MLS & CRM Integrations", desc: "Seamless integration with your existing MLS and CRM systems." },
+  ]
+  const brokerageExtra = [
+    { title: "Automated Routing", desc: "Optimized multi-property tour routes for your agents." },
+    { title: "Agent Safety Features", desc: "Real-time check-in and emergency alert capabilities." },
+    { title: "Performance Analytics", desc: "Track showing metrics and agent productivity." },
+    { title: "AI Assistant", desc: "24/7 automated showing requests and follow-ups." },
+    { title: "Calendar Integrations", desc: "Sync with Google Calendar, Outlook, and Apple Calendar." },
+    { title: "Priority Support", desc: "Dedicated support with faster response times." },
+  ]
+  const enterpriseFeatures = [
+    { title: "Unlimited Showings", desc: "Schedule and manage unlimited property showings with no restrictions." },
+    { title: "AI-Powered Scheduling", desc: "Intelligent appointment scheduling that optimizes routes automatically." },
+    { title: "White Label Branding", desc: "Fully branded to your association, MLS, brokerage, team, or agency." },
+    { title: "MLS & CRM Integrations", desc: "Seamless integration with your existing MLS and CRM systems." },
+  ]
+  const enterpriseExtra = [
+    { title: "Custom API Access", desc: "Full API access for custom integrations and workflows." },
+    { title: "SSO & Advanced Security", desc: "Single sign-on and enterprise-grade security controls." },
+    { title: "Dedicated Account Manager", desc: "Your own account manager for onboarding and support." },
+    { title: "SLA Guarantee", desc: "99.9% uptime guarantee with priority incident response." },
+    { title: "Data Export & Ownership", desc: "Full data portability and ownership guarantees." },
+    { title: "Custom Onboarding", desc: "Tailored training and rollout plan for your organization." },
+  ]
+  return (
+    <div className="pricing-page">
+      <section className="pricing-hero">
+        <div className="section-container">
+          <span className="hero-badge">Enterprise Pricing</span>
+          <h1 className="section-title">Plans and Pricing</h1>
+          <p className="section-subtitle">Subscription plans and pricing designed for real estate organizations to support teams and agents success via their MLSs, Associations and Brokerages.</p>
+        </div>
+      </section>
+
+      <section className="pricing-plans">
+        <div className="section-container">
+          <div className="plans-grid">
+            <div className="plan-card">
+              <h2>Brokerage Plan</h2>
+              <p className="plan-subtitle">Pricing for your Brokerage</p>
+              <p className="plan-desc">The Brokerage plan is designed for real estate brokerages looking to empower their teams and agents with AI-powered showings management technology with your branding. Pricing is based on active producing agents and scales as you grow.</p>
+              <div className="plan-features">
+                {brokerageFeatures.map((f, i) => (
+                  <div className="plan-feature" key={i}>
+                    <span className="feature-check">✓</span>
+                    <div><h3>{f.title}</h3><p>{f.desc}</p></div>
+                  </div>
+                ))}
+                {showMoreBrokerage && brokerageExtra.map((f, i) => (
+                  <div className="plan-feature" key={`extra-${i}`}>
+                    <span className="feature-check">✓</span>
+                    <div><h3>{f.title}</h3><p>{f.desc}</p></div>
+                  </div>
+                ))}
+              </div>
+              <button className="show-more-btn" onClick={() => setShowMoreBrokerage(!showMoreBrokerage)}>
+                {showMoreBrokerage ? 'Show Less Features' : `Show More Features (${brokerageExtra.length} more)`} →
+              </button>
+              <a href="#quote-form" className="btn btn-primary btn-full">Get Custom Pricing ✓</a>
+            </div>
+            <div className="plan-card plan-card-enterprise">
+              <h2>Enterprise Plan</h2>
+              <p className="plan-subtitle">Pricing for MLS &amp; Associations</p>
+              <p className="plan-desc">The enterprise plan is tailored to your organization's MLS integrations. Pricing is based on active producing agents that scales up and down with your members.</p>
+              <div className="plan-features">
+                {enterpriseFeatures.map((f, i) => (
+                  <div className="plan-feature" key={i}>
+                    <span className="feature-check">✓</span>
+                    <div><h3>{f.title}</h3><p>{f.desc}</p></div>
+                  </div>
+                ))}
+                {showMoreEnterprise && enterpriseExtra.map((f, i) => (
+                  <div className="plan-feature" key={`extra-${i}`}>
+                    <span className="feature-check">✓</span>
+                    <div><h3>{f.title}</h3><p>{f.desc}</p></div>
+                  </div>
+                ))}
+              </div>
+              <button className="show-more-btn" onClick={() => setShowMoreEnterprise(!showMoreEnterprise)}>
+                {showMoreEnterprise ? 'Show Less Features' : `Show More Features (${enterpriseExtra.length} more)`} →
+              </button>
+              <a href="#quote-form" className="btn btn-primary btn-full">Get Custom Pricing ✓</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="pricing-orgs">
+        <div className="section-container">
+          <h2 className="section-title">Designed for Real Estate Organizations</h2>
+          <p className="section-subtitle">Whether you're managing hundreds or thousands of agents, Homezai scales to meet your needs.</p>
+          <div className="orgs-grid">
+            <div className="org-card"><h3>Realtor Associations</h3><p>Provide value to your members with a modern showing management platform.</p></div>
+            <div className="org-card"><h3>Multiple Listing Services</h3><p>Enhance your MLS offering with integrated showing management.</p></div>
+            <div className="org-card"><h3>Brokerages</h3><p>Empower your agents with tools that save time and close more deals.</p></div>
+            <div className="org-card"><h3>Teams &amp; Individual Agents</h3><p>Professional showing management for teams of any size.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <section className="pricing-why">
+        <div className="section-container">
+          <h2 className="section-title">Why Choose Homezai Enterprise?</h2>
+          <p className="section-subtitle">Built specifically for real estate professionals who demand the best.</p>
+          <div className="why-grid">
+            <div className="why-card">
+              <div className="why-icon">🔒</div>
+              <h3>Enterprise Security</h3>
+              <p>Cloud-based application hosted on Amazon Web Services (AWS) and regular security audits to protect your data.</p>
+            </div>
+            <div className="why-card">
+              <div className="why-icon">🎧</div>
+              <h3>Dedicated Support</h3>
+              <p>Your dedicated account manager and priority support team are here to help 24/7.</p>
+            </div>
+            <div className="why-card">
+              <div className="why-icon">📊</div>
+              <h3>Data Ownership</h3>
+              <p>Your data is always yours. Export, backup, and control your information at any time.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="quote-form" className="pricing-quote">
+        <div className="section-container">
+          <h2 className="section-title">Get Your Custom Pricing Quote</h2>
+          <p className="section-subtitle">Tell us about your organization and we'll provide a tailored pricing proposal.</p>
+          <form className="quote-form" onSubmit={e => e.preventDefault()}>
+            <div className="form-row">
+              <div className="form-group"><label>First Name *</label><input type="text" placeholder="First Name" required /></div>
+              <div className="form-group"><label>Last Name *</label><input type="text" placeholder="Last Name" required /></div>
+            </div>
+            <div className="form-row">
+              <div className="form-group"><label>Work Email *</label><input type="email" placeholder="Work Email" required /></div>
+              <div className="form-group"><label>Phone Number *</label><input type="tel" placeholder="Phone Number" required /></div>
+            </div>
+            <div className="form-group"><label>Organization Name *</label><input type="text" placeholder="Organization Name" required /></div>
+            <div className="form-row">
+              <div className="form-group"><label>Number of Agents *</label><input type="number" placeholder="1200" min="1" required /></div>
+              <div className="form-group">
+                <label>Organization Type *</label>
+                <select required defaultValue="">
+                  <option value="" disabled>Select organization type</option>
+                  <option>Realtor Association</option>
+                  <option>Multiple Listing Service</option>
+                  <option>Brokerage</option>
+                  <option>Team</option>
+                  <option>Individual Agent</option>
+                </select>
+              </div>
+            </div>
+            <div className="form-group"><label>Current Showing Management System (if any)</label><input type="text" placeholder="e.g., ShowingTime, Centralized Showings, etc." /></div>
+            <div className="form-group"><label>Additional Information</label><textarea placeholder="Tell us more about your needs, timeline, or any specific requirements..." rows="4"></textarea></div>
+            <button type="submit" className="btn btn-primary btn-full btn-lg">Request Pricing Quote</button>
+            <p className="form-legal">By submitting this form, you agree to our <Link to="/privacy">Privacy Policy</Link> and <Link to="/terms">Terms of Service</Link>.</p>
+          </form>
+        </div>
+      </section>
+
+      <section className="pricing-bottom-cta">
+        <div className="section-container">
+          <h2 className="section-title light">Ready to Transform Your Showing Management?</h2>
+          <p className="section-subtitle light">Join thousands of real estate professionals already using Showzy showings management by Homezai to streamline their showings process.</p>
+          <div className="cta-actions">
+            <a href="#quote-form" className="btn btn-white">Get Pricing Quote ✓</a>
+            <Link to="/#demo" className="btn btn-outline-light">Schedule a Demo</Link>
+          </div>
+        </div>
+      </section>
+    </div>
+  )
+}
+
+/* ===== Integrations Page ===== */
+function IntegrationsPage() {
+  useEffect(() => { document.title = 'Integrations - Homezai' }, [])
+  const categories = [
+    {
+      name: "Multiple Listing Service (MLS)", items: [
+        { name: "CincyMLS", desc: "MLS of Greater Cincinnati" },
+        { name: "Dayton Realtors\u00AE", desc: "Dayton area MLS integration" },
+        { name: "NKAR", desc: "Northern Kentucky Association of Realtors" },
+      ]
+    },
+    {
+      name: "Customer Relationship Management (CRM)", items: [
+        { name: "BoldTrail by Inside Real Estate", desc: "Complete real estate CRM platform" },
+        { name: "Moxiworks", desc: "Agent-centric CRM solution" },
+      ]
+    },
+    {
+      name: "Calendars", items: [
+        { name: "Apple Calendar", desc: "Seamless scheduling with Apple Calendar" },
+        { name: "Calendly", desc: "Automated scheduling and booking" },
+        { name: "Google Calendar", desc: "Sync appointments with Google Calendar" },
+        { name: "Microsoft Outlook Calendar", desc: "Integrate with Outlook scheduling" },
+      ]
+    },
+    {
+      name: "Leads", items: [
+        { name: "Homes.com", desc: "Lead generation platform" },
+        { name: "Homezai", desc: "Internal lead management" },
+        { name: "LinkedIn", desc: "Professional networking leads" },
+        { name: "Meta (Facebook, Instagram)", desc: "Social media advertising" },
+        { name: "Realtor.com", desc: "Premier real estate marketplace" },
+        { name: "TikTok", desc: "Short-form video marketing" },
+        { name: "Zillow", desc: "Leading real estate marketplace" },
+      ]
+    },
+    {
+      name: "Design Apps", items: [
+        { name: "Canva", desc: "Professional design and marketing materials" },
+        { name: "Maxa Designs", desc: "Real estate marketing and design solutions" },
+      ]
+    },
+    {
+      name: "User Roster Feeds", items: [
+        { name: "Berkshire Hathaway HomeServices (BoldTrail)", desc: "Agent roster synchronization" },
+        { name: "Weichert Realtors (BoldTrail)", desc: "Agent roster synchronization" },
+      ]
+    },
+  ]
+  return (
+    <div className="integrations-page">
+      <section className="integrations-hero">
+        <div className="section-container">
+          <span className="hero-badge">Seamless Integrations</span>
+          <h1 className="section-title">Connect Homezai with Your Favorite Tools</h1>
+          <p className="section-subtitle">Homezai integrates seamlessly with the tools you already use. Streamline your workflow and maximize productivity with our comprehensive integration ecosystem.</p>
+          <div className="integrations-pills">
+            <span className="pill">Easy Setup</span>
+            <span className="pill">Real-time Sync</span>
+            <span className="pill">Secure &amp; Reliable</span>
+          </div>
+        </div>
+      </section>
+
+      <section className="integrations-list">
+        <div className="section-container">
+          {categories.map((cat, ci) => (
+            <div className="integration-category" key={ci}>
+              <div className="category-header">
+                <h2>{cat.name}</h2>
+                <span className="category-count">{cat.items.length} integration{cat.items.length !== 1 ? 's' : ''} available</span>
+              </div>
+              <div className="integration-cards">
+                {cat.items.map((item, ii) => (
+                  <div className="integration-card" key={ii}>
+                    <div className="integration-card-content">
+                      <h3>{item.name}</h3>
+                      <p>{item.desc}</p>
+                    </div>
+                    <span className="integration-link-icon">↗</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="integrations-cta">
+        <div className="section-container">
+          <h2 className="section-title light">Need a Custom Integration?</h2>
+          <p className="section-subtitle light">Our team can work with you to build custom integrations tailored to your specific needs.</p>
+          <div className="cta-actions">
+            <Link to="/#demo" className="btn btn-white">Schedule a Demo</Link>
+            <a href="mailto:Info@Homezai.com" className="btn btn-outline-light">Contact Sales</a>
+          </div>
+        </div>
+      </section>
+    </div>
+  )
+}
+
 /* ===== App Root ===== */
 function App() {
   return (
@@ -783,6 +1232,8 @@ function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/support" element={<SupportPage />} />
+        <Route path="/pricing" element={<PricingPage />} />
+        <Route path="/integrations" element={<IntegrationsPage />} />
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/accessibility" element={<AccessibilityPage />} />
