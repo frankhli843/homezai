@@ -335,6 +335,25 @@ function FaqItem({ question }) {
 
 function SupportPage() {
   useEffect(() => { document.title = 'Support - Homezai' }, [])
+  const [supportForm, setSupportForm] = useState({ fullName: '', email: '', category: '', priority: 'Medium', subject: '', message: '' })
+  const handleSupportChange = (field) => (e) => setSupportForm(prev => ({ ...prev, [field]: e.target.value }))
+  const handleSupportSubmit = (e) => {
+    e.preventDefault()
+    const { fullName, email, category, priority, subject, message } = supportForm
+    const body = [
+      `Full Name: ${fullName}`,
+      `Email: ${email}`,
+      `Category: ${category}`,
+      `Priority: ${priority}`,
+      `Subject: ${subject}`,
+      '',
+      `Message:`,
+      message,
+      '',
+      `Page URL: ${window.location.href}`,
+    ].join('\n')
+    window.location.href = `mailto:contact@homezai.com?subject=${encodeURIComponent(`Homezai Support Request: ${subject}`)}&body=${encodeURIComponent(body)}`
+  }
   const trainingVideos = [
     { title: "Getting Started with Homezai", desc: "Learn the basics of setting up your Homezai account and managing your first showing.", duration: "5:32", category: "Getting Started", img: "https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=800&q=80" },
     { title: "Intelligent Appointment Scheduling", desc: "Master our AI-powered scheduling system to automate your showing appointments.", duration: "8:15", category: "Features", img: "https://images.unsplash.com/photo-1551434678-e076c223a692?w=800&q=80" },
@@ -472,21 +491,21 @@ function SupportPage() {
         <div className="section-container">
           <h2 className="section-title">Send a Support Request</h2>
           <p className="section-subtitle">Can't find what you're looking for? We're here to help!</p>
-          <form className="support-form" onSubmit={e => e.preventDefault()}>
+          <form className="support-form" onSubmit={handleSupportSubmit}>
             <div className="form-row">
               <div className="form-group">
                 <label>Full Name *</label>
-                <input type="text" placeholder="Full Name" required />
+                <input type="text" placeholder="Full Name" required value={supportForm.fullName} onChange={handleSupportChange('fullName')} />
               </div>
               <div className="form-group">
                 <label>Email Address *</label>
-                <input type="email" placeholder="Email Address" required />
+                <input type="email" placeholder="Email Address" required value={supportForm.email} onChange={handleSupportChange('email')} />
               </div>
             </div>
             <div className="form-row">
               <div className="form-group">
                 <label>Category *</label>
-                <select required defaultValue="">
+                <select required value={supportForm.category} onChange={handleSupportChange('category')}>
                   <option value="" disabled>Select a category</option>
                   <option>Technical Issue</option>
                   <option>Billing &amp; Payment</option>
@@ -498,7 +517,7 @@ function SupportPage() {
               </div>
               <div className="form-group">
                 <label>Priority</label>
-                <select defaultValue="Medium">
+                <select value={supportForm.priority} onChange={handleSupportChange('priority')}>
                   <option>Low</option>
                   <option>Medium</option>
                   <option>High</option>
@@ -508,11 +527,11 @@ function SupportPage() {
             </div>
             <div className="form-group">
               <label>Subject *</label>
-              <input type="text" placeholder="Subject" required />
+              <input type="text" placeholder="Subject" required value={supportForm.subject} onChange={handleSupportChange('subject')} />
             </div>
             <div className="form-group">
               <label>Message *</label>
-              <textarea placeholder="Describe your issue or question..." rows="5" required></textarea>
+              <textarea placeholder="Describe your issue or question..." rows="5" required value={supportForm.message} onChange={handleSupportChange('message')}></textarea>
             </div>
             <p className="form-note">Our support team typically responds within 24 hours during business days. For urgent issues, please call us at 1-502-434-0605.</p>
             <button type="submit" className="btn btn-primary btn-full">Submit Support Request</button>
@@ -943,6 +962,25 @@ function PricingPage() {
   useEffect(() => { document.title = 'Plans and Pricing - Homezai' }, [])
   const [showMoreBrokerage, setShowMoreBrokerage] = useState(false)
   const [showMoreEnterprise, setShowMoreEnterprise] = useState(false)
+  const [quoteForm, setQuoteForm] = useState({ firstName: '', lastName: '', workEmail: '', phone: '', orgName: '', numAgents: '', orgType: '', currentSystem: '', additionalInfo: '' })
+  const handleQuoteChange = (field) => (e) => setQuoteForm(prev => ({ ...prev, [field]: e.target.value }))
+  const handleQuoteSubmit = (e) => {
+    e.preventDefault()
+    const { firstName, lastName, workEmail, phone, orgName, numAgents, orgType, currentSystem, additionalInfo } = quoteForm
+    const body = [
+      `Name: ${firstName} ${lastName}`,
+      `Work Email: ${workEmail}`,
+      `Phone: ${phone}`,
+      `Organization: ${orgName}`,
+      `Number of Agents: ${numAgents}`,
+      `Organization Type: ${orgType}`,
+      currentSystem ? `Current Showing System: ${currentSystem}` : '',
+      additionalInfo ? `\nAdditional Information:\n${additionalInfo}` : '',
+      '',
+      `Page URL: ${window.location.href}`,
+    ].filter(Boolean).join('\n')
+    window.location.href = `mailto:contact@homezai.com?subject=${encodeURIComponent(`Homezai Pricing Quote Request: ${orgName}`)}&body=${encodeURIComponent(body)}`
+  }
   const brokerageFeatures = [
     { title: "Unlimited Showings", desc: "Schedule and manage unlimited property showings with no restrictions." },
     { title: "AI-Powered Scheduling", desc: "Intelligent appointment scheduling that optimizes routes automatically." },
@@ -1075,21 +1113,21 @@ function PricingPage() {
         <div className="section-container">
           <h2 className="section-title">Get Your Custom Pricing Quote</h2>
           <p className="section-subtitle">Tell us about your organization and we'll provide a tailored pricing proposal.</p>
-          <form className="quote-form" onSubmit={e => e.preventDefault()}>
+          <form className="quote-form" onSubmit={handleQuoteSubmit}>
             <div className="form-row">
-              <div className="form-group"><label>First Name *</label><input type="text" placeholder="First Name" required /></div>
-              <div className="form-group"><label>Last Name *</label><input type="text" placeholder="Last Name" required /></div>
+              <div className="form-group"><label>First Name *</label><input type="text" placeholder="First Name" required value={quoteForm.firstName} onChange={handleQuoteChange('firstName')} /></div>
+              <div className="form-group"><label>Last Name *</label><input type="text" placeholder="Last Name" required value={quoteForm.lastName} onChange={handleQuoteChange('lastName')} /></div>
             </div>
             <div className="form-row">
-              <div className="form-group"><label>Work Email *</label><input type="email" placeholder="Work Email" required /></div>
-              <div className="form-group"><label>Phone Number *</label><input type="tel" placeholder="Phone Number" required /></div>
+              <div className="form-group"><label>Work Email *</label><input type="email" placeholder="Work Email" required value={quoteForm.workEmail} onChange={handleQuoteChange('workEmail')} /></div>
+              <div className="form-group"><label>Phone Number *</label><input type="tel" placeholder="Phone Number" required value={quoteForm.phone} onChange={handleQuoteChange('phone')} /></div>
             </div>
-            <div className="form-group"><label>Organization Name *</label><input type="text" placeholder="Organization Name" required /></div>
+            <div className="form-group"><label>Organization Name *</label><input type="text" placeholder="Organization Name" required value={quoteForm.orgName} onChange={handleQuoteChange('orgName')} /></div>
             <div className="form-row">
-              <div className="form-group"><label>Number of Agents *</label><input type="number" placeholder="1200" min="1" required /></div>
+              <div className="form-group"><label>Number of Agents *</label><input type="number" placeholder="1200" min="1" required value={quoteForm.numAgents} onChange={handleQuoteChange('numAgents')} /></div>
               <div className="form-group">
                 <label>Organization Type *</label>
-                <select required defaultValue="">
+                <select required value={quoteForm.orgType} onChange={handleQuoteChange('orgType')}>
                   <option value="" disabled>Select organization type</option>
                   <option>Realtor Association</option>
                   <option>Multiple Listing Service</option>
@@ -1099,8 +1137,8 @@ function PricingPage() {
                 </select>
               </div>
             </div>
-            <div className="form-group"><label>Current Showing Management System (if any)</label><input type="text" placeholder="e.g., ShowingTime, Centralized Showings, etc." /></div>
-            <div className="form-group"><label>Additional Information</label><textarea placeholder="Tell us more about your needs, timeline, or any specific requirements..." rows="4"></textarea></div>
+            <div className="form-group"><label>Current Showing Management System (if any)</label><input type="text" placeholder="e.g., ShowingTime, Centralized Showings, etc." value={quoteForm.currentSystem} onChange={handleQuoteChange('currentSystem')} /></div>
+            <div className="form-group"><label>Additional Information</label><textarea placeholder="Tell us more about your needs, timeline, or any specific requirements..." rows="4" value={quoteForm.additionalInfo} onChange={handleQuoteChange('additionalInfo')}></textarea></div>
             <button type="submit" className="btn btn-primary btn-full btn-lg">Request Pricing Quote</button>
             <p className="form-legal">By submitting this form, you agree to our <Link to="/privacy">Privacy Policy</Link> and <Link to="/terms">Terms of Service</Link>.</p>
           </form>
