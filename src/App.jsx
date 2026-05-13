@@ -313,7 +313,7 @@ function FaqItem({ question }) {
   const answers = {
     "How does Homezai's AI scheduling work?": "Homezai uses advanced AI to automatically match showing requests with agent availability, optimize routes for multiple properties, and send automated confirmations and reminders to all parties involved.",
     "Can I use my own branding with Homezai?": "Yes! Homezai is fully white-labeled. You can customize the platform with your logo, colors, domain, and branding so your clients never see the Homezai name.",
-    "Which MLS and CRM systems does Homezai integrate with?": "Homezai integrates with major MLS systems including CincyMLS, Dayton Realtors, and NKAR, as well as CRM platforms like BoldTrail and Moxiworks. We're continuously adding new integrations.",
+    "Which MLS and CRM systems does Homezai integrate with?": "Homezai integrates with major MLS systems including CincyMLS and SWFL MLS, as well as CRM platforms like BoldTrail. We're continuously adding new integrations.",
     "How do I optimize routes for multiple property showings?": "Our AI-powered routing engine automatically calculates the most efficient route between multiple properties, considering travel time, showing duration, and agent availability.",
     "Who owns the data in Homezai?": "You own your data. Homezai provides full data export capabilities, and you maintain complete control over your information at all times.",
     "How much does Homezai cost?": "Homezai offers custom pricing based on your organization's size and needs. Contact our sales team for a tailored pricing proposal.",
@@ -1166,14 +1166,12 @@ function IntegrationsPage() {
     {
       name: "Multiple Listing Service (MLS)", items: [
         { name: "CincyMLS", desc: "MLS of Greater Cincinnati" },
-        { name: "Dayton Realtors\u00AE", desc: "Dayton area MLS integration" },
-        { name: "NKAR", desc: "Northern Kentucky Association of Realtors" },
+        { name: "SWFL MLS", desc: "Bonita-Estero Realtors\u00AE" },
       ]
     },
     {
       name: "Customer Relationship Management (CRM)", items: [
         { name: "BoldTrail by Inside Real Estate", desc: "Complete real estate CRM platform" },
-        { name: "Moxiworks", desc: "Agent-centric CRM solution" },
       ]
     },
     {
