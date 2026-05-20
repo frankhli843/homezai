@@ -31,7 +31,6 @@ function Navbar() {
           <Link to="/integrations">Integrations</Link>
           <Link to="/pricing">Pricing</Link>
           <Link to="/#demo">Demo</Link>
-          <Link to="/support">Support</Link>
         </div>
         <div className="nav-right">
           <a href="https://app.homezai.com" target="_blank" rel="noopener noreferrer" className="nav-login">Login</a>
@@ -70,7 +69,6 @@ function Footer() {
             <a href="#">About</a>
             <a href="#">Careers</a>
             <a href="mailto:contact@homezai.com">Contact</a>
-            <Link to="/support">Support</Link>
             <a href="https://app.homezai.com" target="_blank" rel="noopener noreferrer">Login</a>
           </div>
           <div className="footer-links-group">
@@ -1267,7 +1265,7 @@ function App() {
       <Navbar />
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/support" element={<SupportPage />} />
+        <Route path="/support" element={<Navigate to="/" replace />} />
         <Route path="/pricing" element={<PricingPage />} />
         <Route path="/integrations" element={<IntegrationsPage />} />
         <Route path="/terms" element={<TermsPage />} />
