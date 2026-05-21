@@ -124,12 +124,24 @@ function HomePage() {
                 Schedule a Demo <span className="arrow">→</span>
               </a>
               <Link to="/#features" className="btn btn-outline">
-                Learn More
+                Learn more about Homezai
               </Link>
             </div>
           </div>
           <div className="hero-image">
-            <img src={`${BASE}images/hero-main.png`} alt="Homezai AI-powered showing management platform with AI assistant, property listings, and map routing" className="hero-img-main" />
+            <video
+              className="hero-video"
+              src={`${BASE}videos/homezai-homepage-demo.mp4`}
+              poster={`${BASE}images/hero-main.png`}
+              autoPlay
+              muted
+              loop
+              playsInline
+              controls
+              aria-label="Homezai business site overview video"
+            >
+              <img src={`${BASE}images/hero-main.png`} alt="Homezai AI-powered showing management platform with AI assistant, property listings, and map routing" />
+            </video>
           </div>
         </div>
       </section>
