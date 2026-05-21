@@ -291,7 +291,7 @@ body {
 .hero-video {
   display: block;
   max-width: 100%;
-  aspect-ratio: 13 / 9;
+  aspect-ratio: 16 / 9;
   object-fit: cover;
   background: var(--gray-100);
 }
