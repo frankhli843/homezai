@@ -131,7 +131,7 @@ function HomePage() {
           <div className="hero-image">
             <video
               className="hero-video"
-              src={`${BASE}videos/homezai-homepage-demo.mp4`}
+              src={`${BASE}videos/homezai-homepage-demo.mp4?v=20260522`}
               poster={`${BASE}images/hero-main.png`}
               autoPlay
               muted
