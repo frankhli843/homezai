@@ -1,6 +1,7 @@
 import { Routes, Route, Link, useLocation, Navigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import './App.css'
+import { trackPageView, trackEvent } from './analytics'
 
 const BASE = import.meta.env.BASE_URL
 
@@ -14,6 +15,15 @@ function ScrollToTop() {
       window.scrollTo(0, 0)
     }
   }, [pathname, hash])
+  return null
+}
+
+// Fires a GA4 page_view event on every React Router location change
+function RouteTracker() {
+  const location = useLocation()
+  useEffect(() => {
+    trackPageView(location.pathname + location.search, document.title)
+  }, [location.pathname, location.search])
   return null
 }
 
@@ -33,8 +43,10 @@ function Navbar() {
           <Link to="/#demo">Demo</Link>
         </div>
         <div className="nav-right">
-          <a href="https://app.homezai.com" target="_blank" rel="noopener noreferrer" className="nav-login">Login</a>
-          <Link to="/pricing#quote-form" className="btn btn-primary btn-pill nav-cta">Get a Quote</Link>
+          <a href="https://app.homezai.com" target="_blank" rel="noopener noreferrer" className="nav-login"
+            onClick={() => trackEvent('app_login_click', { button_location: 'navbar', page_path: window.location.pathname })}>Login</a>
+          <Link to="/pricing#quote-form" className="btn btn-primary btn-pill nav-cta"
+            onClick={() => trackEvent('pricing_quote_click', { button_location: 'navbar', page_path: window.location.pathname })}>Get a Quote</Link>
         </div>
         <button className="mobile-menu-btn" onClick={() => {
           document.querySelector('.nav-links').classList.toggle('mobile-open')
@@ -69,7 +81,8 @@ function Footer() {
             <a href="#">About</a>
             <a href="#">Careers</a>
             <a href="mailto:contact@homezai.com">Contact</a>
-            <a href="https://app.homezai.com" target="_blank" rel="noopener noreferrer">Login</a>
+            <a href="https://app.homezai.com" target="_blank" rel="noopener noreferrer"
+              onClick={() => trackEvent('app_login_click', { button_location: 'footer', page_path: window.location.pathname })}>Login</a>
           </div>
           <div className="footer-links-group">
             <h4>Legal</h4>
@@ -120,7 +133,8 @@ function HomePage() {
               integrations—all under your brand.
             </p>
             <div className="hero-actions">
-              <a href="mailto:contact@homezai.com" className="btn btn-primary">
+              <a href="mailto:contact@homezai.com" className="btn btn-primary"
+                onClick={() => trackEvent('demo_cta_click', { button_location: 'hero', cta_label: 'Schedule a Demo', page_path: window.location.pathname })}>
                 Schedule a Demo <span className="arrow">→</span>
               </a>
               <Link to="/#features" className="btn btn-outline">
@@ -309,7 +323,8 @@ function HomePage() {
             Join hundreds of real estate teams already using Homezai to streamline their showing operations.
           </p>
           <div className="cta-actions">
-            <a href="mailto:contact@homezai.com" className="btn btn-white">Schedule a Demo →</a>
+            <a href="mailto:contact@homezai.com" className="btn btn-white"
+              onClick={() => trackEvent('demo_cta_click', { button_location: 'cta_section', cta_label: 'Schedule a Demo', page_path: window.location.pathname })}>Schedule a Demo →</a>
           </div>
         </div>
       </section>
@@ -362,6 +377,8 @@ function SupportPage() {
       '',
       `Page URL: ${window.location.href}`,
     ].join('\n')
+    // Track support request action (category only — no PII/message body sent to GA4)
+    trackEvent('support_request_click', { category: category, priority: priority, page_path: window.location.pathname })
     window.location.href = `mailto:contact@homezai.com?subject=${encodeURIComponent(`Homezai Support Request: ${subject}`)}&body=${encodeURIComponent(body)}`
   }
   const trainingVideos = [
@@ -754,6 +771,7 @@ function PrivacyPage() {
             <li>support personalized experiences.</li>
           </ul>
           <p>You may adjust your browser settings to block cookies.</p>
+          <p>This website uses Google Analytics 4 to understand website traffic, visitor behavior, device and browser information, and marketing performance. Google Analytics collects anonymized, aggregated data and does not identify individual visitors by name. For more information, see <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Google's Privacy Policy</a>. To opt out of Google Analytics data collection, you may use the <a href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noopener noreferrer">Google Analytics Opt-out Browser Add-on</a> or adjust your browser settings.</p>
 
           <h2>8. Data Security</h2>
           <p>We use industry-standard protections:</p>
@@ -989,6 +1007,8 @@ function PricingPage() {
       '',
       `Page URL: ${window.location.href}`,
     ].filter(Boolean).join('\n')
+    // Track quote submission (org_type only — no names, emails, or phone numbers sent to GA4)
+    trackEvent('pricing_quote_click', { org_type: orgType, button_location: 'quote_form', page_path: window.location.pathname })
     window.location.href = `mailto:contact@homezai.com?subject=${encodeURIComponent(`Homezai Pricing Quote Request: ${orgName}`)}&body=${encodeURIComponent(body)}`
   }
   const brokerageFeatures = [
@@ -1053,7 +1073,8 @@ function PricingPage() {
               <button className="show-more-btn" onClick={() => setShowMoreBrokerage(!showMoreBrokerage)}>
                 {showMoreBrokerage ? 'Show Less Features' : `Show More Features (${brokerageExtra.length} more)`} →
               </button>
-              <a href="#quote-form" className="btn btn-primary btn-full">Get Custom Pricing ✓</a>
+              <a href="#quote-form" className="btn btn-primary btn-full"
+                onClick={() => trackEvent('pricing_quote_click', { button_location: 'pricing_card', page_path: window.location.pathname })}>Get Custom Pricing ✓</a>
             </div>
             <div className="plan-card plan-card-enterprise">
               <h2>Enterprise Plan</h2>
@@ -1076,7 +1097,8 @@ function PricingPage() {
               <button className="show-more-btn" onClick={() => setShowMoreEnterprise(!showMoreEnterprise)}>
                 {showMoreEnterprise ? 'Show Less Features' : `Show More Features (${enterpriseExtra.length} more)`} →
               </button>
-              <a href="#quote-form" className="btn btn-primary btn-full">Get Custom Pricing ✓</a>
+              <a href="#quote-form" className="btn btn-primary btn-full"
+                onClick={() => trackEvent('pricing_quote_click', { button_location: 'pricing_card', page_path: window.location.pathname })}>Get Custom Pricing ✓</a>
             </div>
           </div>
         </div>
@@ -1260,8 +1282,10 @@ function IntegrationsPage() {
           <h2 className="section-title light">Need a Custom Integration?</h2>
           <p className="section-subtitle light">Our team can work with you to build custom integrations tailored to your specific needs.</p>
           <div className="cta-actions">
-            <Link to="/#demo" className="btn btn-white">Schedule a Demo</Link>
-            <a href="mailto:Info@Homezai.com" className="btn btn-outline-light">Contact Sales</a>
+            <Link to="/#demo" className="btn btn-white"
+              onClick={() => trackEvent('demo_cta_click', { button_location: 'integrations_cta', cta_label: 'Schedule a Demo', page_path: window.location.pathname })}>Schedule a Demo</Link>
+            <a href="mailto:Info@Homezai.com" className="btn btn-outline-light"
+              onClick={() => trackEvent('contact_click', { button_location: 'integrations_cta', cta_label: 'Contact Sales', page_path: window.location.pathname })}>Contact Sales</a>
           </div>
         </div>
       </section>
@@ -1274,6 +1298,7 @@ function App() {
   return (
     <div className="app">
       <ScrollToTop />
+      <RouteTracker />
       <Navbar />
       <Routes>
         <Route path="/" element={<HomePage />} />

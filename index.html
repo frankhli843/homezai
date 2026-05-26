@@ -20,6 +20,16 @@
         }
       })(window.location)
     </script>
+
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-VJ5C0CSR0B"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      // send_page_view disabled here — SPA route changes send page_view explicitly via analytics.js
+      gtag('config', 'G-VJ5C0CSR0B', { send_page_view: false });
+    </script>
   </head>
   <body>
     <div id="root"></div>
