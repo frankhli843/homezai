@@ -296,6 +296,28 @@ body {
   background: var(--gray-100);
 }
 
+.hero-video:fullscreen {
+  width: 100vw;
+  height: 100vh;
+  max-width: none;
+  aspect-ratio: auto;
+  object-fit: contain;
+  background: #000;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.hero-video:-webkit-full-screen {
+  width: 100vw;
+  height: 100vh;
+  max-width: none;
+  aspect-ratio: auto;
+  object-fit: contain;
+  background: #000;
+  border-radius: 0;
+  box-shadow: none;
+}
+
 /* ===== Showcase Section ===== */
 .showcase {
   padding: 100px 0;
