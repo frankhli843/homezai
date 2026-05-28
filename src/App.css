@@ -1729,3 +1729,80 @@ body {
     max-width: calc(100vw - 40px);
   }
 }
+
+/* ===== Contact Page ===== */
+.contact-hero {
+  background: linear-gradient(135deg, var(--primary-50) 0%, var(--white) 100%);
+  padding: 80px 0 60px;
+  text-align: center;
+}
+
+.contact-form-section {
+  padding: 64px 0;
+}
+
+.contact-form-wrapper {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 40px;
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  min-height: 200px;
+}
+
+.contact-info-section {
+  padding: 40px 0 80px;
+  background: var(--gray-50);
+}
+
+.contact-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 24px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.contact-info-card {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  padding: 24px;
+  text-align: center;
+}
+
+.contact-info-card h3 {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-body);
+  margin-bottom: 8px;
+}
+
+.contact-info-card p {
+  color: var(--text-heading);
+  font-size: 0.95rem;
+  margin: 2px 0;
+}
+
+.contact-info-card a {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.contact-info-card a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .contact-form-wrapper {
+    padding: 24px 16px;
+  }
+
+  .contact-hero {
+    padding: 60px 0 40px;
+  }
+}

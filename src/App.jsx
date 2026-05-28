@@ -41,6 +41,7 @@ function Navbar() {
           <Link to="/integrations">Integrations</Link>
           <Link to="/pricing">Pricing</Link>
           <Link to="/#demo">Demo</Link>
+          <Link to="/contact">Contact</Link>
         </div>
         <div className="nav-right">
           <a href="https://app.homezai.com" target="_blank" rel="noopener noreferrer" className="nav-login"
@@ -80,7 +81,7 @@ function Footer() {
             <Link to="/">Home</Link>
             <a href="#">About</a>
             <a href="#">Careers</a>
-            <a href="mailto:contact@homezai.com">Contact</a>
+            <Link to="/contact">Contact</Link>
             <a href="https://app.homezai.com" target="_blank" rel="noopener noreferrer"
               onClick={() => trackEvent('app_login_click', { button_location: 'footer', page_path: window.location.pathname })}>Login</a>
           </div>
@@ -1293,6 +1294,66 @@ function IntegrationsPage() {
   )
 }
 
+/* ===== Contact Page ===== */
+function ContactPage() {
+  useEffect(() => { document.title = 'Contact Us - Homezai' }, [])
+
+  useEffect(() => {
+    const src = 'https://js-na2.hsforms.net/forms/embed/245865428.js'
+    if (!document.querySelector(`script[src="${src}"]`)) {
+      const script = document.createElement('script')
+      script.src = src
+      script.defer = true
+      document.head.appendChild(script)
+    }
+  }, [])
+
+  return (
+    <div className="contact-page">
+      <section className="contact-hero">
+        <div className="section-container">
+          <span className="hero-badge">Get in Touch</span>
+          <h1 className="section-title">Contact Us</h1>
+          <p className="section-subtitle">Request a sales demo or get support from the Homezai team.</p>
+        </div>
+      </section>
+
+      <section className="contact-form-section">
+        <div className="section-container">
+          <div className="contact-form-wrapper">
+            <div
+              className="hs-form-frame"
+              data-region="na2"
+              data-form-id="2d0028b7-cef3-4941-8bdf-99992a68cfd5"
+              data-portal-id="245865428"
+            ></div>
+          </div>
+        </div>
+      </section>
+
+      <section className="contact-info-section">
+        <div className="section-container">
+          <div className="contact-info-grid">
+            <div className="contact-info-card">
+              <h3>Email</h3>
+              <p><a href="mailto:Info@Homezai.com">Info@Homezai.com</a></p>
+            </div>
+            <div className="contact-info-card">
+              <h3>Phone</h3>
+              <p>1-502-434-0605</p>
+            </div>
+            <div className="contact-info-card">
+              <h3>Address</h3>
+              <p>255 Alhambra Circle Ste 700</p>
+              <p>Coral Gables, FL 34134</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  )
+}
+
 /* ===== App Root ===== */
 function App() {
   return (
@@ -1303,6 +1364,7 @@ function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/support" element={<Navigate to="/" replace />} />
+        <Route path="/contact" element={<ContactPage />} />
         <Route path="/pricing" element={<PricingPage />} />
         <Route path="/integrations" element={<IntegrationsPage />} />
         <Route path="/terms" element={<TermsPage />} />
