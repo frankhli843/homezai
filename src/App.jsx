@@ -73,8 +73,8 @@ function Footer() {
             <Link to="/#features">Features</Link>
             <Link to="/pricing">Pricing</Link>
             <Link to="/integrations">Integrations</Link>
-            <Link to="/#demo">Schedule a Demo</Link>
-            <Link to="/#demo">Talk to Sales</Link>
+            <Link to="/contact">Schedule a Demo</Link>
+            <Link to="/contact">Talk to Sales</Link>
           </div>
           <div className="footer-links-group">
             <h4>Company</h4>
@@ -134,10 +134,10 @@ function HomePage() {
               integrations—all under your brand.
             </p>
             <div className="hero-actions">
-              <a href="mailto:contact@homezai.com" className="btn btn-primary"
+              <Link to="/contact" className="btn btn-primary"
                 onClick={() => trackEvent('demo_cta_click', { button_location: 'hero', cta_label: 'Schedule a Demo', page_path: window.location.pathname })}>
                 Schedule a Demo <span className="arrow">→</span>
-              </a>
+              </Link>
               <Link to="/#features" className="btn btn-outline">
                 Learn more about Homezai
               </Link>
@@ -324,8 +324,8 @@ function HomePage() {
             Join hundreds of real estate teams already using Homezai to streamline their showing operations.
           </p>
           <div className="cta-actions">
-            <a href="mailto:contact@homezai.com" className="btn btn-white"
-              onClick={() => trackEvent('demo_cta_click', { button_location: 'cta_section', cta_label: 'Schedule a Demo', page_path: window.location.pathname })}>Schedule a Demo →</a>
+            <Link to="/contact" className="btn btn-white"
+              onClick={() => trackEvent('demo_cta_click', { button_location: 'cta_section', cta_label: 'Schedule a Demo', page_path: window.location.pathname })}>Schedule a Demo →</Link>
           </div>
         </div>
       </section>
@@ -1184,7 +1184,7 @@ function PricingPage() {
           <p className="section-subtitle light">Join thousands of real estate professionals already using Showzy showings management by Homezai to streamline their showings process.</p>
           <div className="cta-actions">
             <a href="#quote-form" className="btn btn-white">Get Pricing Quote ✓</a>
-            <Link to="/#demo" className="btn btn-outline-light">Schedule a Demo</Link>
+            <Link to="/contact" className="btn btn-outline-light">Schedule a Demo</Link>
           </div>
         </div>
       </section>
@@ -1283,7 +1283,7 @@ function IntegrationsPage() {
           <h2 className="section-title light">Need a Custom Integration?</h2>
           <p className="section-subtitle light">Our team can work with you to build custom integrations tailored to your specific needs.</p>
           <div className="cta-actions">
-            <Link to="/#demo" className="btn btn-white"
+            <Link to="/contact" className="btn btn-white"
               onClick={() => trackEvent('demo_cta_click', { button_location: 'integrations_cta', cta_label: 'Schedule a Demo', page_path: window.location.pathname })}>Schedule a Demo</Link>
             <a href="mailto:Info@Homezai.com" className="btn btn-outline-light"
               onClick={() => trackEvent('contact_click', { button_location: 'integrations_cta', cta_label: 'Contact Sales', page_path: window.location.pathname })}>Contact Sales</a>
