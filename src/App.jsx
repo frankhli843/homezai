@@ -3,6 +3,12 @@ import { useEffect, useState } from 'react'
 import './App.css'
 import { trackPageView, trackEvent } from './analytics'
 import { integrationCategories } from './integrationsData'
+import {
+  HOMEZAI_WORDMARK,
+  HOMEZAI_WORDMARK_ALT,
+  HOMEZAI_WORDMARK_HEIGHT,
+  HOMEZAI_WORDMARK_WIDTH,
+} from './brand.js'
 
 const BASE = import.meta.env.BASE_URL
 
@@ -34,7 +40,7 @@ function Navbar() {
     <nav className="navbar">
       <div className="nav-container">
         <Link to="/" className="nav-logo">
-          <img src={`${BASE}images/homezai-logo.png`} alt="Homezai" className="logo-img" />
+          <img src={`${BASE}${HOMEZAI_WORDMARK.replace(/^\//, '')}`} alt={HOMEZAI_WORDMARK_ALT} width={HOMEZAI_WORDMARK_WIDTH} height={HOMEZAI_WORDMARK_HEIGHT} className="logo-img" />
         </Link>
         <div className="nav-links">
           <Link to="/#features">Features</Link>
@@ -64,8 +70,8 @@ function Footer() {
       <div className="footer-container">
         <div className="footer-grid">
           <div className="footer-brand">
-            <Link to="/" className="nav-logo">
-              <img src={`${BASE}images/homezai-logo.png`} alt="Homezai" className="logo-img logo-img-light" />
+            <Link to="/" className="nav-logo footer-logo">
+              <img src={`${BASE}${HOMEZAI_WORDMARK.replace(/^\//, '')}`} alt={HOMEZAI_WORDMARK_ALT} width={HOMEZAI_WORDMARK_WIDTH} height={HOMEZAI_WORDMARK_HEIGHT} className="logo-img" />
             </Link>
             <p className="footer-tagline">AI real estate showings software with intelligent appointment scheduling for the modern real estate professional.</p>
           </div>

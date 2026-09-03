@@ -195,13 +195,27 @@ body {
 }
 
 /* ===== Logo Image ===== */
+/* The wordmark carries its own intrinsic 4:1 box through width and height
+   attributes, so the browser reserves this space before the image decodes and
+   the header never shifts. Only the height is set here, keeping the ratio. */
 .logo-img {
   height: 36px;
   width: auto;
 }
 
-.logo-img-light {
-  filter: brightness(0) invert(1);
+/* The supplied artwork bakes 13.5 percent of its own width into clear space on
+   each side. Pulling that back optically aligns the visible mark with the same
+   left gutter every other element on the page uses, without touching a pixel of
+   the art. 0.135 of the rendered width, and the width is four times the height,
+   so the offset is 0.54 of the rendered height. */
+.navbar .logo-img {
+  margin-left: -19px;
+}
+
+/* The logo is the home link, so give it a real 44px interactive target. The
+   navbar is 72px tall, so this changes nothing visible. */
+.navbar .nav-logo {
+  min-height: 44px;
 }
 
 /* ===== Mobile Menu ===== */
@@ -650,6 +664,22 @@ body {
 
 .footer-brand .nav-logo {
   margin-bottom: 16px;
+}
+
+/* Frank's supplied wordmark is opaque artwork on a white background, so on the
+   dark footer it sits on its own white plate. Recolouring it with the old
+   brightness(0) invert(1) filter would flatten the whole rectangle into a solid
+   white block, and editing the supplied art was not an option. fit-content also
+   ends the old behaviour where this flex anchor stretched across the whole brand
+   column, so the hit area is now the mark itself.
+   The artwork already carries 13.5 percent of its width as clear space on each
+   side but only 8 percent of its height top and bottom, so the plate adds most
+   of its padding vertically to land on an even optical margin. */
+.footer-logo {
+  width: fit-content;
+  padding: 10px 4px;
+  background: var(--white);
+  border-radius: 12px;
 }
 
 .footer-brand .logo-text {
@@ -1646,6 +1676,17 @@ body {
 
   .logo-img {
     height: 26px;
+  }
+
+  /* Same 0.54 of the rendered height as the desktop rule, recomputed for 26px. */
+  .navbar .logo-img {
+    margin-left: -14px;
+  }
+
+  /* Same optical margin as desktop, scaled for the 26px mark. */
+  .footer-logo {
+    padding: 7px 3px;
+    border-radius: 10px;
   }
 
   .nav-container {

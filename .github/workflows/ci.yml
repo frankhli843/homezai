@@ -29,3 +29,11 @@ jobs:
             test -s "$f" || { echo "missing or empty build asset: $f"; exit 1; }
             echo "ok $f ($(stat -c%s "$f") bytes)"
           done
+      - name: Assert the deployed Homezai wordmark is the exact supplied artwork
+        run: |
+          set -euo pipefail
+          f=dist/images/homezai-wordmark.png
+          test -s "$f" || { echo "missing or empty build asset: $f"; exit 1; }
+          echo "f1b4d81b591e7f166618bfad5663c990b1b45b9d9874fec81fda5d8c2e978bd0  $f" \
+            | sha256sum --check --strict
+          echo "ok $f ($(stat -c%s "$f") bytes)"
