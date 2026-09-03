@@ -12,6 +12,19 @@ import {
 
 const BASE = import.meta.env.BASE_URL
 
+/*
+ * The title index.html shipped, captured at module scope before React mounts
+ * and before any page component overwrites document.title.
+ *
+ * Every subpage sets its own title on mount, but nothing used to set it back,
+ * so a client-side navigation home left the previous page name in the browser
+ * tab. Clicking the header wordmark from /pricing landed on the home page with
+ * the tab still reading "Plans and Pricing". Capturing the shipped title here
+ * rather than repeating the string keeps index.html the single source of truth,
+ * so the two can never drift apart.
+ */
+const SITE_TITLE = typeof document === 'undefined' ? '' : document.title
+
 function ScrollToTop() {
   const { pathname, hash } = useLocation()
   useEffect(() => {
@@ -125,6 +138,9 @@ function Footer() {
 
 /* ===== Home Page ===== */
 function HomePage() {
+  useEffect(() => {
+    if (SITE_TITLE) document.title = SITE_TITLE
+  }, [])
   return (
     <>
       {/* Hero Section */}
