@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run lint
+      - run: npm run build
+      - name: Assert the supplied partner logos are emitted into the build
+        run: |
+          set -euo pipefail
+          for f in \
+            dist/images/integrations/coconut-coast-organization-of-realtors.png \
+            dist/images/integrations/baldwin-county-association-of-realtors.png \
+            dist/images/integrations/gulf-coast-mls-mobile-area-association-of-realtors.jpg
+          do
+            test -s "$f" || { echo "missing or empty build asset: $f"; exit 1; }
+            echo "ok $f ($(stat -c%s "$f") bytes)"
+          done

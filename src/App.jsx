@@ -2,6 +2,7 @@ import { Routes, Route, Link, useLocation, Navigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import './App.css'
 import { trackPageView, trackEvent } from './analytics'
+import { integrationCategories } from './integrationsData'
 
 const BASE = import.meta.env.BASE_URL
 
@@ -339,7 +340,7 @@ function FaqItem({ question }) {
   const answers = {
     "How does Homezai's AI scheduling work?": "Homezai uses advanced AI to automatically match showing requests with agent availability, optimize routes for multiple properties, and send automated confirmations and reminders to all parties involved.",
     "Can I use my own branding with Homezai?": "Yes! Homezai is fully white-labeled. You can customize the platform with your logo, colors, domain, and branding so your clients never see the Homezai name.",
-    "Which MLS and CRM systems does Homezai integrate with?": "Homezai integrates with major MLS systems including CincyMLS and SWFL MLS, as well as CRM platforms like BoldTrail. We're continuously adding new integrations.",
+    "Which MLS and CRM systems does Homezai integrate with?": "Homezai integrates with MLS organizations including CincyMLS, Coconut Coast Organization of REALTORS®, Baldwin County Association of REALTORS® and Gulf Coast MLS - Mobile Area Association of REALTORS®, as well as CRM platforms like BoldTrail. We're continuously adding new integrations.",
     "How do I optimize routes for multiple property showings?": "Our AI-powered routing engine automatically calculates the most efficient route between multiple properties, considering travel time, showing duration, and agent availability.",
     "Who owns the data in Homezai?": "You own your data. Homezai provides full data export capabilities, and you maintain complete control over your information at all times.",
     "How much does Homezai cost?": "Homezai offers custom pricing based on your organization's size and needs. Contact our sales team for a tailored pricing proposal.",
@@ -1195,50 +1196,7 @@ function PricingPage() {
 /* ===== Integrations Page ===== */
 function IntegrationsPage() {
   useEffect(() => { document.title = 'Integrations - Homezai' }, [])
-  const categories = [
-    {
-      name: "Multiple Listing Service (MLS)", items: [
-        { name: "CincyMLS", desc: "MLS of Greater Cincinnati" },
-        { name: "SWFL MLS", desc: "Bonita-Estero Realtors\u00AE" },
-      ]
-    },
-    {
-      name: "Customer Relationship Management (CRM)", items: [
-        { name: "BoldTrail by Inside Real Estate", desc: "Complete real estate CRM platform" },
-      ]
-    },
-    {
-      name: "Calendars", items: [
-        { name: "Apple Calendar", desc: "Seamless scheduling with Apple Calendar" },
-        { name: "Calendly", desc: "Automated scheduling and booking" },
-        { name: "Google Calendar", desc: "Sync appointments with Google Calendar" },
-        { name: "Microsoft Outlook Calendar", desc: "Integrate with Outlook scheduling" },
-      ]
-    },
-    {
-      name: "Leads", items: [
-        { name: "Homes.com", desc: "Lead generation platform" },
-        { name: "Homezai", desc: "Internal lead management" },
-        { name: "LinkedIn", desc: "Professional networking leads" },
-        { name: "Meta (Facebook, Instagram)", desc: "Social media advertising" },
-        { name: "Realtor.com", desc: "Premier real estate marketplace" },
-        { name: "TikTok", desc: "Short-form video marketing" },
-        { name: "Zillow", desc: "Leading real estate marketplace" },
-      ]
-    },
-    {
-      name: "Design Apps", items: [
-        { name: "Canva", desc: "Professional design and marketing materials" },
-        { name: "Maxa Designs", desc: "Real estate marketing and design solutions" },
-      ]
-    },
-    {
-      name: "User Roster Feeds", items: [
-        { name: "Berkshire Hathaway HomeServices (BoldTrail)", desc: "Agent roster synchronization" },
-        { name: "Weichert Realtors (BoldTrail)", desc: "Agent roster synchronization" },
-      ]
-    },
-  ]
+  const categories = integrationCategories
   return (
     <div className="integrations-page">
       <section className="integrations-hero">
@@ -1256,25 +1214,40 @@ function IntegrationsPage() {
 
       <section className="integrations-list">
         <div className="section-container">
-          {categories.map((cat, ci) => (
-            <div className="integration-category" key={ci}>
-              <div className="category-header">
-                <h2>{cat.name}</h2>
-                <span className="category-count">{cat.items.length} integration{cat.items.length !== 1 ? 's' : ''} available</span>
-              </div>
-              <div className="integration-cards">
-                {cat.items.map((item, ii) => (
-                  <div className="integration-card" key={ii}>
-                    <div className="integration-card-content">
-                      <h3>{item.name}</h3>
-                      <p>{item.desc}</p>
+          {categories.map((cat) => {
+            // Only categories where a partner has actually sent us artwork get a
+            // logo rail. Categories with no logos keep their original text-only
+            // cards rather than gaining an empty frame on every row.
+            const showsLogos = cat.items.some((item) => item.logo)
+            return (
+              <div className="integration-category" key={cat.name}>
+                <div className="category-header">
+                  <h2>{cat.name}</h2>
+                  <span className="category-count">{cat.items.length} integration{cat.items.length !== 1 ? 's' : ''} available</span>
+                </div>
+                <div className="integration-cards">
+                  {cat.items.map((item) => (
+                    <div className="integration-card" key={item.name}>
+                      {showsLogos && (
+                        // A partner in this category who has not sent artwork
+                        // gets their name set as a wordmark in the same frame,
+                        // so the row stays aligned without inventing a logo.
+                        <div className="integration-logo-frame">
+                          {item.logo
+                            ? <img src={`${BASE}${item.logo.replace(/^\//, '')}`} alt={item.logoAlt || `${item.name} logo`} loading="lazy" />
+                            : <span className="integration-wordmark">{item.name}</span>}
+                        </div>
+                      )}
+                      <div className="integration-card-content">
+                        <h3>{item.name}</h3>
+                        <p>{item.desc}</p>
+                      </div>
                     </div>
-                    <span className="integration-link-icon">↗</span>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </section>
 
