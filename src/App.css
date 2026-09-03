@@ -1447,7 +1447,8 @@ body {
 }
 
 .category-count {
-  font-size: 0.85rem;
+  /* 14px is the house body-text floor. Never goes below this. */
+  font-size: 0.875rem;
   color: var(--text-body);
 }
 
@@ -1506,7 +1507,8 @@ body {
   padding: 6px;
   border-radius: var(--radius-sm);
   background: var(--gray-50);
-  font-size: 0.8125rem;
+  /* 14px is the house body-text floor. Never goes below this. */
+  font-size: 0.875rem;
   font-weight: 600;
   line-height: 1.2;
   text-align: center;

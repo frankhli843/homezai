@@ -1214,32 +1214,40 @@ function IntegrationsPage() {
 
       <section className="integrations-list">
         <div className="section-container">
-          {categories.map((cat) => (
-            <div className="integration-category" key={cat.name}>
-              <div className="category-header">
-                <h2>{cat.name}</h2>
-                <span className="category-count">{cat.items.length} integration{cat.items.length !== 1 ? 's' : ''} available</span>
-              </div>
-              <div className="integration-cards">
-                {cat.items.map((item) => (
-                  <div className="integration-card" key={item.name}>
-                    {/* Partners who sent us artwork get their real logo. Everyone
-                        else gets their name set as a wordmark in the same frame,
-                        so the row stays aligned without inventing a logo. */}
-                    <div className="integration-logo-frame">
-                      {item.logo
-                        ? <img src={`${BASE}${item.logo.replace(/^\//, '')}`} alt={item.logoAlt || `${item.name} logo`} loading="lazy" />
-                        : <span className="integration-wordmark">{item.name}</span>}
+          {categories.map((cat) => {
+            // Only categories where a partner has actually sent us artwork get a
+            // logo rail. Categories with no logos keep their original text-only
+            // cards rather than gaining an empty frame on every row.
+            const showsLogos = cat.items.some((item) => item.logo)
+            return (
+              <div className="integration-category" key={cat.name}>
+                <div className="category-header">
+                  <h2>{cat.name}</h2>
+                  <span className="category-count">{cat.items.length} integration{cat.items.length !== 1 ? 's' : ''} available</span>
+                </div>
+                <div className="integration-cards">
+                  {cat.items.map((item) => (
+                    <div className="integration-card" key={item.name}>
+                      {showsLogos && (
+                        // A partner in this category who has not sent artwork
+                        // gets their name set as a wordmark in the same frame,
+                        // so the row stays aligned without inventing a logo.
+                        <div className="integration-logo-frame">
+                          {item.logo
+                            ? <img src={`${BASE}${item.logo.replace(/^\//, '')}`} alt={item.logoAlt || `${item.name} logo`} loading="lazy" />
+                            : <span className="integration-wordmark">{item.name}</span>}
+                        </div>
+                      )}
+                      <div className="integration-card-content">
+                        <h3>{item.name}</h3>
+                        <p>{item.desc}</p>
+                      </div>
                     </div>
-                    <div className="integration-card-content">
-                      <h3>{item.name}</h3>
-                      <p>{item.desc}</p>
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </section>
 
