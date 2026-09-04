@@ -85,14 +85,16 @@ export function formatPreviewDate(value) {
  * text `[object Object]`, and writing that into a src attribute swaps a truthful
  * placeholder for a broken image icon.
  */
+function loadableSource(value) {
+  return typeof value === 'string' && /^(blob:|data:|https?:|\/)/i.test(value) ? value : ''
+}
+
 function assetSource(asset) {
   if (!asset || typeof asset !== 'object') return ''
-  const usable = (value) =>
-    typeof value === 'string' && /^(blob:|data:|https?:|\/)/i.test(value) ? value : ''
-  const direct = usable(asset.url)
+  const direct = loadableSource(asset.url)
   if (direct) return direct
   try {
-    return usable(String(asset))
+    return loadableSource(String(asset))
   } catch {
     return ''
   }
@@ -125,8 +127,20 @@ export function resolveHeroSource(asset, path, thumbnailUrl) {
   if (assetUrl) return assetUrl
   if (thumbnailUrl) return thumbnailUrl
   if (typeof path === 'string' && path.startsWith(MEDIA_PREFIX)) return SITE_ORIGIN + path
-  if (typeof path === 'string' && /^https?:\/\//i.test(path)) return path
-  return ''
+  // The field value itself, when it is already something a browser can load.
+  //
+  // This is the branch the placeholder was really falling through. Wrapping the
+  // product's own preview template on the deployed editor and reading the props it
+  // is handed shows that between choosing an image and saving the article, the
+  // entry's heroImage field holds `blob:https://homezai.com/<uuid>` and
+  // getAsset(thatBlob) returns undefined. A blob URL neither starts with the media
+  // prefix nor matches http(s), so every branch declined a hero the publisher was
+  // looking at in the field beside the pane.
+  //
+  // It reuses the same shape test as the asset, rather than accepting any non
+  // empty string: this is publisher input on its way into an src attribute, and a
+  // field value is exactly where a javascript: URL would arrive.
+  return loadableSource(path)
 }
 
 /**
