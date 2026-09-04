@@ -38,6 +38,13 @@
     </noscript>
     <div class="cms-boot" id="cms-boot">Loading the Homezai content editor...</div>
     <script src="/admin/sveltia-cms.js" type="module"></script>
+    <!--
+      Replaces the editor's default Preview pane, which is a labelled dump of every
+      field, with the article as a reader will actually see it. Built from src/admin/
+      by vite.admin.config.js so it uses the site's own markdown renderer and the
+      site's own stylesheet rather than a second copy of either.
+    -->
+    <script src="/admin/preview.js" type="module"></script>
     <script type="module">
       /*
        * Take the placeholder down the moment the editor paints something of its own.

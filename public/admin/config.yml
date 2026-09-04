@@ -113,6 +113,10 @@ collections:
         label: Hero image
         widget: image
         required: false
+        # No "Enter URL". The publish step only accepts a hero that lives in this
+        # repository's media folder, so a typed in web address is a control that can
+        # only ever fail at publish time, and the picker opened on it by default.
+        choose_url: false
         hint: >-
           Required before publishing. This is also the image that appears when the
           article is shared. JPEG, PNG or WebP, up to 8 MB.

@@ -120,3 +120,65 @@ describe('the admin page is excluded from public discovery', () => {
     assert.doesNotMatch(app, /["'`]\/admin/)
   })
 })
+
+/*
+ * An editor must not offer a control the pipeline will refuse. Every one of these was
+ * a real defect found by opening the deployed editor and using it: the picker opened
+ * on stock photo providers, and then on "Enter URL", both of which produce an image
+ * the publish step rejects, so the publisher only learns it was never allowed at the
+ * moment they try to go live.
+ */
+describe('the editor offers no control the publish step will refuse', () => {
+  const config = existsSync(configPath) ? readFileSync(configPath, 'utf8') : ''
+
+  test('no stock photo provider is offered, because only uploaded images publish', () => {
+    assert.match(config, /^\s*stock_assets:\s*$/m)
+    assert.match(config, /^\s*providers:\s*\[\]\s*$/m)
+    // Comments are stripped first. The file explains in prose why these providers are
+    // not offered, and that sentence is worth keeping; a provider actually configured
+    // is the thing being refused here.
+    const settings = config.replace(/^\s*#.*$/gm, '')
+    assert.doesNotMatch(settings, /unsplash|pexels|pixabay/i)
+  })
+
+  test('the hero image field does not offer a typed in web address', () => {
+    const hero = config.slice(config.indexOf('- name: heroImage'))
+    const field = hero.slice(0, hero.indexOf('- name: heroImageAlt'))
+    assert.match(field, /^\s*choose_url:\s*false\s*$/m, 'the hero picker still offers Enter URL')
+  })
+})
+
+/*
+ * The Preview pane. Sveltia's default is a labelled dump of every field, which is a
+ * view of the form rather than of the article, so it is replaced. These checks are
+ * about the wiring only; what the preview draws is covered by admin-preview.test.js.
+ */
+describe('the editor previews the article a reader would see', () => {
+  const html = existsSync(indexPath) ? readFileSync(indexPath, 'utf8') : ''
+  const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'))
+
+  test('the editor page loads the preview', () => {
+    assert.match(html, /<script src="\/admin\/preview\.js" type="module"><\/script>/)
+  })
+
+  test('the preview is built before the site build copies public/', () => {
+    assert.ok(pkg.scripts['build:admin'], 'there is no build:admin step')
+    const chain = pkg.scripts.build
+    assert.ok(chain.includes('build:admin'), 'the build chain never builds the preview')
+    assert.ok(
+      chain.indexOf('build:admin') < chain.indexOf('vite build &&'),
+      'the preview is built after public/ has already been copied, so it would not ship',
+    )
+  })
+
+  test('the built preview is never committed, so it cannot disagree with its source', () => {
+    const ignored = readFileSync(join(root, '.gitignore'), 'utf8')
+    assert.match(ignored, /^public\/admin\/preview\.js$/m)
+  })
+
+  test('the preview source is present to build from', () => {
+    assert.ok(existsSync(join(root, 'src/admin/preview.js')))
+    assert.ok(existsSync(join(root, 'src/admin/previewTemplate.js')))
+    assert.ok(existsSync(join(root, 'vite.admin.config.js')))
+  })
+})

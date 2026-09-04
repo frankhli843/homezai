@@ -70,6 +70,53 @@ function isNonEmptyString(value) {
   return typeof value === 'string' && value.trim().length > 0
 }
 
+/** Strip the angle brackets markdown allows around a link target. */
+function unwrapTarget(raw) {
+  const value = String(raw ?? '').trim()
+  if (value.startsWith('<') && value.endsWith('>')) return value.slice(1, -1).trim()
+  return value
+}
+
+/**
+ * Every image the body will render, as written.
+ *
+ * The hero image is already refused unless it is a local asset, but the body was not
+ * checked at all, so a publisher who used the editor's "Enter URL" control inside an
+ * article got a live page hotlinking somebody else's server. That image can move,
+ * expire or be swapped for something else at any time, on a page we are responsible
+ * for, and nothing here would notice.
+ *
+ * This stays regular expression based rather than importing the renderer, because
+ * this module is the shared contract and is deliberately dependency free. The risk
+ * that carries is that it drifts from what markdown-it actually renders, and drifting
+ * *narrower* is the dangerous direction: a missed image is a hotlink that ships. So
+ * the test suite renders a corpus through the real renderer and asserts every emitted
+ * src was found here, which is the thing that keeps the two honest.
+ */
+export function bodyImageTargets(body) {
+  const source = String(body ?? '')
+  const targets = []
+
+  // ![alt](target "title") and ![alt](<target>)
+  for (const match of source.matchAll(/!\[[^\]\n]*\]\(\s*(<[^>\n]*>|[^\s)]*)/g)) {
+    targets.push(unwrapTarget(match[1]))
+  }
+
+  // Reference style: ![alt][id], ![id][] and the shortcut ![id], resolved against the
+  // link definitions at the foot of the document.
+  const definitions = new Map()
+  for (const match of source.matchAll(/^ {0,3}\[([^\]\n]+)\]:\s*(<[^>\n]*>|\S+)/gm)) {
+    definitions.set(match[1].trim().toLowerCase(), unwrapTarget(match[2]))
+  }
+  for (const match of source.matchAll(/!\[([^\]\n]*)\](?:\[([^\]\n]*)\])?(?!\()/g)) {
+    const label = (match[2] || '').trim() || (match[1] || '').trim()
+    const resolved = definitions.get(label.toLowerCase())
+    if (resolved !== undefined) targets.push(resolved)
+  }
+
+  return targets
+}
+
 /**
  * Validate one post.
  *
@@ -105,7 +152,20 @@ export function validatePost(post) {
     fail('excerpt', `excerpt must be ${MAX_EXCERPT_LENGTH} characters or fewer`)
   }
 
-  if (typeof post.body !== 'string' || post.body.length === 0) fail('body', 'body is required')
+  if (typeof post.body !== 'string' || post.body.length === 0) {
+    fail('body', 'body is required')
+  } else {
+    for (const target of bodyImageTargets(post.body)) {
+      if (target === '') {
+        fail('body', 'an image in the article has no file. Choose an uploaded image, or remove it')
+      } else if (!LOCAL_MEDIA_PATTERN.test(target)) {
+        fail(
+          'body',
+          `the image "${target}" in the article is not one of ours. Upload it in the editor so it is served from homezai.com, rather than linking to somebody else's copy`,
+        )
+      }
+    }
+  }
 
   if (!isNonEmptyString(post.status)) {
     fail('status', 'status is required')

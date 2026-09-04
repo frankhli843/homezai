@@ -89,6 +89,54 @@ check(
   existsSync(join(dist, 'admin/sveltia-cms.js')),
   'the editor bundle was not vendored, so /admin/ would load nothing',
 )
+/*
+ * The article preview is a separate build step, so it is the one part of the editor
+ * that can silently go missing: the page would still load, sign in and save, and the
+ * Preview pane would quietly fall back to Sveltia's field dump. Checking the file
+ * exists is not enough either, because an empty or half built module is still a file.
+ * So the built bytes are checked for the two things that make the preview trustworthy,
+ * its own markup and the site stylesheet it is dressed with.
+ */
+check(existsSync(join(dist, 'admin/preview.js')), 'the article preview was not built into the editor')
+if (existsSync(join(dist, 'admin/preview.js'))) {
+  const preview = readFileSync(join(dist, 'admin/preview.js'), 'utf8')
+  check(
+    preview.includes('preview-share-card'),
+    'the built preview does not contain its own markup, so it was not bundled from src/admin',
+  )
+  check(
+    preview.includes('.article-body'),
+    'the built preview does not carry the site stylesheet, so it would not look like the article',
+  )
+  check(
+    /<script src="\/admin\/preview\.js"/.test(readFileSync(join(dist, 'admin/index.html'), 'utf8')),
+    'the editor page does not load the article preview that was built for it',
+  )
+}
+
+/*
+ * The editor directory holds the editor and nothing else.
+ *
+ * The preview build writes into public/admin/, and vite's default is to also copy
+ * publicDir into outDir. With both pointing at overlapping paths it copied the whole
+ * public tree, images and the homepage video included, into public/admin/ and from
+ * there into the build: about 11 MB of duplicates that still passed every other check
+ * because nothing was missing. publicDir is off in vite.admin.config.js now, and this
+ * is what notices if that ever comes back.
+ */
+const EDITOR_FILES = new Set([
+  'index.html',
+  'config.yml',
+  'preview.js',
+  'sveltia-cms.js',
+  'revisions.js',
+  'revisions/index.html',
+])
+for (const file of walk(join(dist, 'admin'))) {
+  const name = relative(join(dist, 'admin'), file).replaceAll('\\', '/')
+  check(EDITOR_FILES.has(name), `dist/admin/${name} does not belong to the editor and should not be published`)
+}
+
 const robots = readFileSync(join(dist, 'robots.txt'), 'utf8')
 check(/^Disallow: \/admin\/$/m.test(robots), 'robots.txt does not disallow the editor')
 check(
