@@ -39,7 +39,45 @@ function basename(path) {
   return String(path).split(/[/\\]/).pop()
 }
 
-export function planPublishSync({ files = [], media = [], existingPublic = [] } = {}) {
+/*
+ * Timestamps.
+ *
+ * The editor promises that the publish date is set on first publish and left alone
+ * afterwards, and until this was tried against production nothing actually kept that
+ * promise: the CMS does not stamp it and the sync did not either, so an article
+ * published from the editor arrived with no date at all.
+ *
+ * Stamping it here has one trap. If the value were recomputed on every run, the sync
+ * would rewrite a timestamp even when nothing about the article had changed, which
+ * would commit, which would deploy, which would run the sync again. So the previous
+ * published copy is the source of truth: publishedAt is taken from it when it exists,
+ * and updatedAt only moves when something other than the timestamps actually differs.
+ */
+function stampTimestamps(post, previous, now) {
+  const publishedAt = previous?.publishedAt || post.publishedAt || now
+
+  const meaningfulChange =
+    !previous ||
+    ['title', 'slug', 'excerpt', 'author', 'heroImage', 'heroImageAlt', 'heroImageDecorative',
+      'seoTitle', 'seoDescription', 'featured', 'featureOrder'].some(
+      (field) => JSON.stringify(previous[field] ?? null) !== JSON.stringify(post[field] ?? null),
+    ) ||
+    String(previous.body ?? '').trim() !== String(post.body ?? '').trim() ||
+    JSON.stringify(previous.tags ?? []) !== JSON.stringify(post.tags ?? []) ||
+    JSON.stringify(previous.previousSlugs ?? []) !== JSON.stringify(post.previousSlugs ?? [])
+
+  const updatedAt = meaningfulChange ? post.updatedAt || now : previous.updatedAt || publishedAt
+
+  return { ...post, publishedAt, updatedAt }
+}
+
+export function planPublishSync({
+  files = [],
+  media = [],
+  existingPublic = [],
+  existingPosts = [],
+  now = new Date().toISOString(),
+} = {}) {
   const errors = []
   const warnings = []
   const withheld = []
@@ -54,18 +92,36 @@ export function planPublishSync({ files = [], media = [], existingPublic = [] } 
     }
   }
 
-  // 2. Validate the collection. Drafts are dropped here and never read again.
-  const collection = buildCollection(posts)
+  // 2. Stamp the timestamps before validating, so that an article the editor saved
+  //    without a publish date is dated rather than rejected. The previous published
+  //    copy, when there is one, decides both values.
+  const previousBySlug = new Map()
+  for (const previous of existingPosts) {
+    try {
+      const parsed = parsePostFile(previous.contents, previous.path)
+      previousBySlug.set(parsed.slug, parsed)
+    } catch {
+      // A previously published file that no longer parses is not a reason to refuse a
+      // new publish; it is simply replaced.
+    }
+  }
+
+  const stamped = posts.map((post) =>
+    post.status === 'published' ? stampTimestamps(post, previousBySlug.get(post.slug), now) : post,
+  )
+
+  // 3. Validate the collection. Drafts are dropped here and never read again.
+  const collection = buildCollection(stamped)
   errors.push(...collection.errors)
   warnings.push(...collection.warnings)
 
-  for (const post of posts) {
+  for (const post of stamped) {
     if (post.status !== 'published') {
       withheld.push({ path: post.file, reason: 'draft' })
     }
   }
 
-  // 3. Index the media by the name it will be published under. The name is derived from
+  // 4. Index the media by the name it will be published under. The name is derived from
   //    the source file name only, so replacing an image is an in place edit and every
   //    already published article and already scraped social card keeps resolving.
   const byPublishedName = new Map()
@@ -83,7 +139,7 @@ export function planPublishSync({ files = [], media = [], existingPublic = [] } 
     byPublishedName.set(name, { ...item, check, publishedName: name })
   }
 
-  // 4. Resolve every reference a published post makes.
+  // 5. Resolve every reference a published post makes.
   const referenced = new Set()
   for (const post of collection.posts) {
     for (const reference of mediaReferences(post)) {
@@ -114,7 +170,7 @@ export function planPublishSync({ files = [], media = [], existingPublic = [] } 
     if (!referenced.has(name)) withheld.push({ path: item.path, reason: 'unreferenced' })
   }
 
-  // 5. Fail closed. Nothing moves unless the whole plan is sound.
+  // 6. Fail closed. Nothing moves unless the whole plan is sound.
   if (errors.length > 0) {
     return { writes: [], deletes: [], errors, warnings, withheld }
   }
@@ -140,7 +196,7 @@ export function planPublishSync({ files = [], media = [], existingPublic = [] } 
     })
   }
 
-  // 6. Anything the public repository still holds inside a managed directory that this
+  // 7. Anything the public repository still holds inside a managed directory that this
   //    plan did not write is gone from the private repository or is no longer published,
   //    so it is removed. Nothing outside those two directories is ever touched.
   const written = new Set(writes.map((w) => w.path))

@@ -34,7 +34,23 @@ const FIELD_ORDER = [
 function toInstant(value) {
   if (value == null) return undefined
   if (value instanceof Date) return value.toISOString()
-  return String(value)
+  const text = String(value).trim()
+  return text.length === 0 ? undefined : text
+}
+
+/*
+ * The editor writes every optional field it knows about, and writes the ones nobody
+ * filled in as an empty string rather than leaving them out. That is reasonable of it,
+ * but downstream an empty string is not the same thing as an absent value: a required
+ * field check would pass on '' and an ISO instant check would fail on it, which is how
+ * a perfectly ordinary article ends up rejected for "updatedAt must be an ISO 8601
+ * instant". Empty means absent, and it is normalised once, here, rather than in each
+ * of the places that would otherwise have to remember.
+ */
+function blankToUndefined(value) {
+  if (typeof value === 'string' && value.trim().length === 0) return undefined
+  if (Array.isArray(value) && value.length === 0) return undefined
+  return value
 }
 
 /**
@@ -60,8 +76,14 @@ export function parsePostFile(contents, file) {
     throw new Error(`${file}: frontmatter must be a mapping of field names to values`)
   }
 
+  const normalised = {}
+  for (const [key, value] of Object.entries(data)) {
+    const cleaned = blankToUndefined(value)
+    if (cleaned !== undefined) normalised[key] = cleaned
+  }
+
   return {
-    ...data,
+    ...normalised,
     publishedAt: toInstant(data.publishedAt),
     updatedAt: toInstant(data.updatedAt),
     body: match[2] ?? '',

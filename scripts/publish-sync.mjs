@@ -86,16 +86,23 @@ async function main() {
     bytes: readFileSync(join(mediaDir, entry.name)),
   }))
 
+  // The previously published copies decide the timestamps, so they are read, not just
+  // listed. Without them the publish date would be reinvented on every run.
+  const existingPosts = listFiles(join(site, 'content/posts'))
+    .filter((entry) => entry.name.endsWith('.md'))
+    .map((entry) => ({
+      path: `content/posts/${entry.name}`,
+      contents: readFileSync(join(site, 'content/posts', entry.name), 'utf8'),
+    }))
+
   const existingPublic = [
-    ...listFiles(join(site, 'content/posts'))
-      .filter((entry) => entry.name.endsWith('.md'))
-      .map((entry) => `content/posts/${entry.name}`),
+    ...existingPosts.map((entry) => entry.path),
     ...listFiles(join(site, 'public/blog-media'))
       .filter((entry) => entry.name !== '.gitkeep')
       .map((entry) => `public/blog-media/${entry.name}`),
   ]
 
-  const plan = planPublishSync({ files, media, existingPublic })
+  const plan = planPublishSync({ files, media, existingPublic, existingPosts })
 
   if (plan.errors.length > 0) {
     summary('## Publish failed')
