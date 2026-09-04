@@ -1,0 +1,185 @@
+# Homezai content editor.
+#
+# This file is served publicly at https://homezai.com/admin/config.yml and that is
+# fine. It contains no credential and grants nothing. Every read and every write the
+# editor performs goes to api.github.com carrying the signed in publisher's own token,
+# and GitHub decides whether it is allowed. A person without access to the content
+# repository below gets 404 from the API and can see nothing: not a draft, not its
+# body, not the media folder and not the history.
+#
+# The repository here is deliberately NOT the public site repository. Drafts live only
+# in the private one. A publish workflow copies articles whose status is "published"
+# into the public repository, so an unpublished article has no path to the public web.
+#
+# There is no scheduling. Publishing is immediate, and no field here suggests otherwise.
+
+backend:
+  name: github
+  repo: frankhli843/homezai-content
+  branch: main
+  commit_messages:
+    create: 'Create article "{{slug}}"'
+    update: 'Update article "{{slug}}"'
+    delete: 'Delete article "{{slug}}"'
+    uploadMedia: 'Upload image {{path}}'
+    deleteMedia: 'Delete image {{path}}'
+
+# Uploads land here in the private repository.
+media_folder: content/media
+# ...and are served from here once published, which is what a post body must reference.
+public_folder: /blog-media
+
+# Client side image handling. The server side pipeline in the publish workflow is the
+# boundary that actually enforces type, size and metadata stripping; this only saves
+# Nina from uploading a 12 MB phone photograph in the first place.
+media_libraries:
+  default:
+    config:
+      max_file_size: 8388608
+      transformations:
+        raster_image:
+          format: webp
+          quality: 85
+          width: 1600
+
+collections:
+  - name: posts
+    label: Articles
+    label_singular: Article
+    description: >-
+      Write, illustrate and publish a Homezai article. Nothing you write is public
+      until Status is set to Published and you save.
+    folder: content/posts
+    create: true
+    delete: true
+    slug: '{{fields.slug}}'
+    identifier_field: title
+    summary: '{{title}}  ({{status}})'
+    sortable_fields: ['updatedAt', 'publishedAt', 'title']
+    view_groups:
+      - label: Status
+        field: status
+    fields:
+      - name: id
+        label: Internal id
+        widget: uuid
+        hint: Minted once when the article is created. It never changes, even if the web address does.
+
+      - name: title
+        label: Title
+        widget: string
+        hint: The headline readers see, and the default browser tab and share title.
+
+      - name: slug
+        label: Web address
+        widget: string
+        pattern:
+          - '^[a-z0-9]+(-[a-z0-9]+)*$'
+          - Lowercase letters, numbers and single hyphens only.
+        hint: >-
+          The article lives at homezai.com/blog/<this>/ . Changing it keeps the old
+          address working as a redirect.
+
+      - name: excerpt
+        label: Summary
+        widget: text
+        maxlength: 300
+        hint: One or two sentences. Shown on cards and used as the search and social description.
+
+      - name: status
+        label: Status
+        widget: select
+        default: draft
+        options:
+          - label: Draft, visible only here
+            value: draft
+          - label: Published, live on homezai.com
+            value: published
+        hint: Publishing is immediate. There is no scheduling.
+
+      - name: author
+        label: Byline
+        widget: select
+        default: Homezai Team
+        options: ['Homezai Team', 'Nina Fabbri', 'Brian Schoedel']
+
+      - name: heroImage
+        label: Hero image
+        widget: image
+        required: false
+        hint: >-
+          Required before publishing. This is also the image that appears when the
+          article is shared. JPEG, PNG or WebP, up to 8 MB.
+
+      - name: heroImageAlt
+        label: Hero image description
+        widget: string
+        required: false
+        hint: >-
+          Describe the image for someone using a screen reader. Required unless the
+          image is purely decorative.
+
+      - name: heroImageDecorative
+        label: The hero image is purely decorative
+        widget: boolean
+        default: false
+        required: false
+
+      - name: featured
+        label: Show on the home page
+        widget: boolean
+        default: false
+        required: false
+        hint: The home page shows the three lowest ordered featured articles.
+
+      - name: featureOrder
+        label: Home page order
+        widget: number
+        value_type: int
+        default: 10
+        required: false
+        hint: Lower comes first. Ties fall back to the newest article.
+
+      - name: tags
+        label: Tags
+        widget: list
+        required: false
+
+      - name: seoTitle
+        label: Search title override
+        widget: string
+        required: false
+
+      - name: seoDescription
+        label: Search description override
+        widget: text
+        required: false
+        maxlength: 300
+
+      - name: publishedAt
+        label: Published
+        widget: datetime
+        required: false
+        picker_utc: true
+        format: "yyyy-MM-dd'T'HH:mm:ss.SSSX"
+        hint: Set automatically when you first publish. Leave it alone unless you are correcting a date.
+
+      - name: updatedAt
+        label: Last updated
+        widget: datetime
+        required: false
+        picker_utc: true
+        format: "yyyy-MM-dd'T'HH:mm:ss.SSSX"
+
+      - name: previousSlugs
+        label: Previous web addresses
+        widget: list
+        required: false
+        hint: Kept automatically so old links keep working. You should not need to edit this.
+
+      - name: body
+        label: Article
+        widget: markdown
+        hint: >-
+          Headings, lists, quotes, links and images. Raw HTML is not accepted and is
+          shown as plain text if you paste it.

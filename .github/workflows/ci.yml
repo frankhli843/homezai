@@ -18,6 +18,18 @@ jobs:
       - run: npm test
       - run: npm run lint
       - run: npm run build
+
+      # The unit tests prove the head builder and the collection are correct. This
+      # proves the bytes that will actually be uploaded are correct, which is a
+      # different question and is where a crawler visible regression would hide.
+      - name: Verify the built output
+        run: node scripts/verify-build.mjs
+
+      # Prove the whole publish path, not just its parts: a draft and a published
+      # article go in, only the published one may come out, its image must lose its
+      # embedded metadata, and an injected script must not survive into the page.
+      - name: Prove the publish boundary end to end
+        run: bash scripts/ci-publish-boundary-check.sh
       # Derived from the page data rather than a hand written list, so a logo
       # added later cannot silently escape the build check the way a fourth
       # entry would have escaped the original three line loop.
