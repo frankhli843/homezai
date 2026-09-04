@@ -40,7 +40,7 @@ author: >-
   Homezai
   Team
 publishedAt: '2026-09-04T19:19:25.261Z'
-updatedAt: '2026-09-04T19:22:32.375Z'
+updatedAt: '2026-09-04T19:24:11.212Z'
 heroImage: /blog-media/hz-qa2-hero.webp
 heroImageAlt: >-
   A
@@ -60,7 +60,7 @@ heroImageAlt: >-
   plain
   background.
 heroImageDecorative: false
-featured: true
+featured: false
 featureOrder: 10
 ---
 
