@@ -248,6 +248,42 @@ describe('the hero is resolved from the most certain source available', () => {
     assert.equal(resolveHeroSource({ url: '' }, '/blog-media/a.jpg', ''), 'https://homezai.com/blog-media/a.jpg')
   })
 
+  // Measured on the deployed editor by wrapping the product's own preview template
+  // and reading the props it is really handed. That is the only probe that watches
+  // the function which drew the frame: registerPreviewTemplate overwrites, so a
+  // replacement registered early hides the product, and one registered after the
+  // entry pane has mounted is never called at all. Between choosing an image and
+  // saving the article, the entry's own heroImage field holds
+  // `blob:https://homezai.com/<uuid>` and getAsset(thatBlob) returns undefined.
+  // Neither path branch accepted it, because a blob URL neither starts with the
+  // media prefix nor matches http(s), so a hero the publisher could see in the
+  // field beside the pane resolved to nothing and the pane called it missing.
+  test('a path that is already a loadable blob is used as it stands', () => {
+    const blob = 'blob:https://homezai.com/0ee66fc2-3fd7-49ab-90a1-08893e45d823'
+    assert.equal(resolveHeroSource(undefined, blob, ''), blob)
+  })
+
+  test('a data url path is loadable too, and is used the same way', () => {
+    const data = 'data:image/png;base64,iVBORw0KGgo='
+    assert.equal(resolveHeroSource(undefined, data, ''), data)
+  })
+
+  test('a chosen asset still outranks a blob path, being the same picture by a surer route', () => {
+    const asset = { url: 'blob:https://homezai.com/from-asset' }
+    assert.equal(
+      resolveHeroSource(asset, 'blob:https://homezai.com/from-path', ''),
+      'blob:https://homezai.com/from-asset',
+    )
+  })
+
+  test('a path that is not a loadable source is refused rather than written into src', () => {
+    // A field value is publisher input arriving at an src attribute. Widening the
+    // path branch to "any non-empty string" would leave javascript: one typo away
+    // from the preview frame.
+    assert.equal(resolveHeroSource(undefined, 'javascript:alert(1)', ''), '')
+    assert.equal(resolveHeroSource(undefined, 'not a url at all', ''), '')
+  })
+
   test('the editor cached thumbnail is next, which is the only copy of an unpublished hero', () => {
     assert.equal(resolveHeroSource(undefined, '/blog-media/a.jpg', 'https://cached/thumb'), 'https://cached/thumb')
   })
