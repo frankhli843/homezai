@@ -14,6 +14,9 @@ export default defineConfig([
     // Vendored at build time out of node_modules.
     'public/admin/sveltia-cms.js',
     'public/admin/revisions.js',
+    // Built from src/admin by vite.admin.config.js. The source is linted; the bundle
+    // is minified output and reporting on it says nothing about this repository's code.
+    'public/admin/preview.js',
   ]),
   {
     // Build scripts and tests run in Node, not in a browser.

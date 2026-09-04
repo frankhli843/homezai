@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node scripts/build-content.mjs && vite build && vite build --ssr src/entry-server.jsx --outDir dist-ssr && node scripts/prerender.mjs",
+    "build": "node scripts/build-content.mjs && npm run build:admin && vite build && vite build --ssr src/entry-server.jsx --outDir dist-ssr && node scripts/prerender.mjs",
+    "build:admin": "vite build --config vite.admin.config.js",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "node --test test/*.test.js",
