@@ -39,7 +39,7 @@ author: >-
   Homezai
   Team
 publishedAt: '2026-09-04T17:18:46.614Z'
-updatedAt: '2026-09-04T17:22:39.276Z'
+updatedAt: '2026-09-04T17:25:29.365Z'
 heroImage: /blog-media/hz-qa-demo-hero.jpg
 heroImageAlt: >-
   A
@@ -54,7 +54,7 @@ heroImageAlt: >-
 heroImageDecorative: false
 tags:
   - synthetic
-featured: true
+featured: false
 featureOrder: 1
 ---
 
