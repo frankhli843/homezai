@@ -41,6 +41,12 @@ media_libraries:
           format: webp
           quality: 85
           width: 1600
+  # No stock photo providers. The publish step only accepts an image that lives in
+  # this repository's media folder, so offering Unsplash or Pexels in the picker would
+  # be offering a choice that fails at publish time. An editor must not show a control
+  # the pipeline will refuse.
+  stock_assets:
+    providers: []
 
 collections:
   - name: posts

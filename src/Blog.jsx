@@ -156,7 +156,7 @@ export function BlogIndexPage() {
             </Link>
           </div>
         ) : (
-          <div className="blog-grid">
+          <div className={`blog-grid blog-grid-count-${Math.min(posts.length, 3)}`}>
             {posts.map((post) => (
               <ArticleCard key={post.id} post={post} location="blog_index" />
             ))}
