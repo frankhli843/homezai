@@ -39,12 +39,38 @@
     <div class="cms-boot" id="cms-boot">Loading the Homezai content editor...</div>
     <script src="/admin/sveltia-cms.js" type="module"></script>
     <script type="module">
-      // Remove the placeholder once the editor has taken over the document, and leave
-      // an honest message behind if it never does, so a failed load is visible rather
-      // than a blank page.
+      /*
+       * Take the placeholder down the moment the editor paints something of its own.
+       * The first version waited on a timer and counted body children, and against
+       * production that left "Loading the Homezai content editor..." sitting above the
+       * sign in screen, because the editor mounts its own root rather than replacing
+       * the body. Watching for its root is the thing that is actually true.
+       *
+       * If it never appears, say so. A blank page tells a publisher nothing.
+       */
       const boot = document.getElementById('cms-boot')
+
+      const editorIsUp = () =>
+        Boolean(document.querySelector('#app, .sveltia-cms, [class*="sveltia"]')) ||
+        document.querySelectorAll('body > *').length > 3
+
+      const remove = () => {
+        if (boot && boot.isConnected) boot.remove()
+      }
+
+      const observer = new MutationObserver(() => {
+        if (editorIsUp()) {
+          remove()
+          observer.disconnect()
+        }
+      })
+      observer.observe(document.body, { childList: true, subtree: true })
+
       setTimeout(() => {
-        if (boot && boot.isConnected && document.querySelectorAll('body > *').length <= 3) {
+        observer.disconnect()
+        if (editorIsUp()) {
+          remove()
+        } else if (boot && boot.isConnected) {
           boot.textContent =
             'The editor did not finish loading. Reload the page, and if it keeps happening tell Frank which browser you are using.'
         }

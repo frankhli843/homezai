@@ -1957,17 +1957,36 @@ body {
   margin-top: 40px;
 }
 
+/*
+ * auto-fill rather than auto-fit. With auto-fit a single article stretches to the
+ * full container width, which on a desktop turns one 16:9 hero into a 675px tall
+ * slab and makes the first published article look like a mistake. auto-fill keeps
+ * the empty tracks, so one card is card sized.
+ */
 .blog-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 28px;
   align-items: stretch;
 }
 
-/* One featured article should not stretch to the full width of a desktop container. */
+/* One or two featured articles are centred rather than left in a ragged row. */
 .blog-grid-count-1 {
   grid-template-columns: minmax(300px, 520px);
   justify-content: center;
+}
+
+.blog-grid-count-2 {
+  grid-template-columns: repeat(2, minmax(300px, 520px));
+  justify-content: center;
+}
+
+@media (max-width: 720px) {
+  .blog-grid,
+  .blog-grid-count-1,
+  .blog-grid-count-2 {
+    grid-template-columns: 1fr;
+  }
 }
 
 .blog-card {
