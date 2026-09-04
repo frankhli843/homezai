@@ -153,6 +153,48 @@ describe('the editor offers no control the publish step will refuse', () => {
  * view of the form rather than of the article, so it is replaced. These checks are
  * about the wiring only; what the preview draws is covered by admin-preview.test.js.
  */
+/*
+ * The editor renders a hint as HTML, so anything in one that looks like a tag is
+ * parsed and thrown away. The slug hint read "The article lives at
+ * homezai.com/blog/<this>/", and what Nina saw was "The article lives at
+ * homezai.com/blog// ." - a sentence with a hole in it, in the one place explaining
+ * how article addresses work.
+ *
+ * This walks the PARSED config rather than grepping the file, because a comment
+ * explaining the rule contains the very string the rule forbids, and a whole-file grep
+ * would either fail on the comment or be loosened until it could not fail at all.
+ */
+describe('nothing the editor shows a publisher is swallowed as markup', () => {
+  test('no label, hint or description contains something HTML would eat', async () => {
+    // js-yaml here is the old CommonJS build, so it has no ES default export.
+    const module = await import('js-yaml')
+    const yaml = module.default ?? module
+    const config = yaml.load(readFileSync(configPath, 'utf8'))
+    assert.ok(config && config.collections, 'the editor config did not parse')
+    const problems = []
+
+    const visit = (node) => {
+      if (Array.isArray(node)) return node.forEach(visit)
+      if (!node || typeof node !== 'object') return
+      for (const [key, value] of Object.entries(node)) {
+        if (['label', 'label_singular', 'hint', 'description', 'summary'].includes(key) && typeof value === 'string') {
+          const tags = value.match(/<[A-Za-z/!][^>]*>/g)
+          if (tags) problems.push(`${key}: ${tags.join(', ')}`)
+        }
+        visit(value)
+      }
+    }
+    visit(config)
+
+    assert.deepEqual(problems, [], `editor copy would render with pieces missing:\n${problems.join('\n')}`)
+  })
+
+  test('the slug hint still explains where the article lives', () => {
+    const config = readFileSync(configPath, 'utf8')
+    assert.match(config, /The article lives at homezai\.com\/blog\//)
+  })
+})
+
 describe('the editor previews the article a reader would see', () => {
   const html = existsSync(indexPath) ? readFileSync(indexPath, 'utf8') : ''
   const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'))

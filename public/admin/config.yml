@@ -82,9 +82,11 @@ collections:
         pattern:
           - '^[a-z0-9]+(-[a-z0-9]+)*$'
           - Lowercase letters, numbers and single hyphens only.
+        # No angle brackets. A hint is rendered as HTML, so "<this>" was parsed as a
+        # tag and dropped, and Nina read "The article lives at homezai.com/blog// ."
         hint: >-
-          The article lives at homezai.com/blog/<this>/ . Changing it keeps the old
-          address working as a redirect.
+          The article lives at homezai.com/blog/ followed by this address and a
+          trailing slash. Changing it keeps the old address working as a redirect.
 
       - name: excerpt
         label: Summary
