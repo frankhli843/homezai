@@ -219,6 +219,35 @@ describe('the hero is resolved from the most certain source available', () => {
     assert.match(url, /^blob:/)
   })
 
+  // Measured against the deployed editor rather than assumed. On a freshly chosen
+  // image getAsset returns {path, url, field, fileObj} with fileObj EMPTY and url
+  // set to a blob. Reading only fileObj fell through to the placeholder, so
+  // between choosing an image and saving the article the preview said "No hero
+  // image yet" while the field beside it showed the file, its name and a Replace
+  // button. The pane contradicted the publisher at the exact moment they were
+  // deciding whether to publish.
+  test('the asset the editor hands back is used even when it carries no fileObj', () => {
+    const asset = { path: '/blog-media/a.jpg', url: 'blob:https://homezai.com/abc', field: {}, fileObj: undefined }
+    assert.equal(resolveHeroSource(asset, '/blog-media/a.jpg', ''), 'blob:https://homezai.com/abc')
+  })
+
+  test('an asset that is only stringifiable still resolves, which is the documented contract', () => {
+    const asset = { toString: () => 'blob:https://homezai.com/def' }
+    assert.equal(resolveHeroSource(asset, '/blog-media/a.jpg', ''), 'blob:https://homezai.com/def')
+  })
+
+  test('a chosen asset outranks the cached thumbnail, because it is the newer picture', () => {
+    const asset = { url: 'blob:https://homezai.com/new' }
+    assert.equal(resolveHeroSource(asset, '/blog-media/a.jpg', 'https://cached/thumb'), 'blob:https://homezai.com/new')
+  })
+
+  test('an asset whose string is not a usable source is ignored rather than rendered', () => {
+    // The default Object toString would otherwise be written straight into src as
+    // the literal text [object Object], which renders as a broken image.
+    assert.equal(resolveHeroSource({}, '/blog-media/a.jpg', 'https://cached/thumb'), 'https://cached/thumb')
+    assert.equal(resolveHeroSource({ url: '' }, '/blog-media/a.jpg', ''), 'https://homezai.com/blog-media/a.jpg')
+  })
+
   test('the editor cached thumbnail is next, which is the only copy of an unpublished hero', () => {
     assert.equal(resolveHeroSource(undefined, '/blog-media/a.jpg', 'https://cached/thumb'), 'https://cached/thumb')
   })
