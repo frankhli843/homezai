@@ -78,6 +78,27 @@ export function formatPreviewDate(value) {
 }
 
 /**
+ * The address an editor asset can be loaded from, or nothing.
+ *
+ * `url` first, then the documented stringification. Both are filtered through the
+ * same shape test because an asset with neither still stringifies, to the literal
+ * text `[object Object]`, and writing that into a src attribute swaps a truthful
+ * placeholder for a broken image icon.
+ */
+function assetSource(asset) {
+  if (!asset || typeof asset !== 'object') return ''
+  const usable = (value) =>
+    typeof value === 'string' && /^(blob:|data:|https?:|\/)/i.test(value) ? value : ''
+  const direct = usable(asset.url)
+  if (direct) return direct
+  try {
+    return usable(String(asset))
+  } catch {
+    return ''
+  }
+}
+
+/**
  * Where the hero image can actually be loaded from inside the preview frame.
  *
  * The frame is a blob document, so a site relative path resolves against nothing. The
@@ -94,6 +115,14 @@ export function resolveHeroSource(asset, path, thumbnailUrl) {
       /* fall through */
     }
   }
+  // The editor's own asset comes next, and it is the reason this branch exists at
+  // all. Measured against the deployed build, a freshly chosen image arrives as
+  // {path, url, field, fileObj} with fileObj EMPTY and url already a blob, so
+  // reading fileObj alone fell all the way through to the placeholder: an article
+  // that plainly had a hero was described as having none for the whole window
+  // between choosing the picture and saving.
+  const assetUrl = assetSource(asset)
+  if (assetUrl) return assetUrl
   if (thumbnailUrl) return thumbnailUrl
   if (typeof path === 'string' && path.startsWith(MEDIA_PREFIX)) return SITE_ORIGIN + path
   if (typeof path === 'string' && /^https?:\/\//i.test(path)) return path
