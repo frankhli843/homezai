@@ -18,17 +18,36 @@ jobs:
       - run: npm test
       - run: npm run lint
       - run: npm run build
-      - name: Assert the supplied partner logos are emitted into the build
+      # Derived from the page data rather than a hand written list, so a logo
+      # added later cannot silently escape the build check the way a fourth
+      # entry would have escaped the original three line loop.
+      - name: Assert every referenced partner logo is emitted into the build
         run: |
           set -euo pipefail
-          for f in \
-            dist/images/integrations/coconut-coast-organization-of-realtors.png \
-            dist/images/integrations/baldwin-county-association-of-realtors.png \
-            dist/images/integrations/gulf-coast-mls-mobile-area-association-of-realtors.jpg
-          do
-            test -s "$f" || { echo "missing or empty build asset: $f"; exit 1; }
-            echo "ok $f ($(stat -c%s "$f") bytes)"
-          done
+          node --input-type=module -e '
+            import { integrationCategories } from "./src/integrationsData.js"
+            const logos = integrationCategories
+              .flatMap((c) => c.items)
+              .filter((i) => i.logo)
+              .map((i) => i.logo.replace(/^\//, ""))
+            if (logos.length < 4) {
+              console.error(`expected at least four referenced logos, found ${logos.length}`)
+              process.exit(1)
+            }
+            console.log(logos.join("\n"))
+          ' > /tmp/referenced-logos.txt
+          while read -r rel; do
+            [ -n "$rel" ] || continue
+            test -s "dist/$rel" || { echo "missing or empty build asset: dist/$rel"; exit 1; }
+            cmp -s "public/$rel" "dist/$rel" \
+              || { echo "built asset differs from the committed source: $rel"; exit 1; }
+            echo "ok dist/$rel ($(stat -c%s "dist/$rel") bytes)"
+          done < /tmp/referenced-logos.txt
+      # The dist backed test skips when dist/ is absent, so run the suite once
+      # more now that a real build exists. Without this it would never execute
+      # in CI and would read as a pass it never earned.
+      - name: Re-run the suite against the built site
+        run: npm test
       - name: Assert the deployed Homezai wordmark is the exact supplied artwork
         run: |
           set -euo pipefail

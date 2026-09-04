@@ -13,9 +13,15 @@ export const integrationCategories = [
   {
     name: 'Multiple Listing Service (MLS)',
     items: [
-      // No logo was supplied for Cincinnati, so this card stays an honest
-      // wordmark rather than borrowed or invented artwork.
-      { name: 'CincyMLS', desc: 'MLS of Greater Cincinnati' },
+      // Cincinnati shipped as a text wordmark until 2026-09-04, when Frank
+      // supplied the official CincyMLS artwork. It is now committed here
+      // like the other three, so every MLS card is real partner artwork.
+      {
+        name: 'CincyMLS',
+        desc: 'MLS of Greater Cincinnati',
+        logo: '/images/integrations/cincymls.png',
+        logoAlt: 'CincyMLS logo',
+      },
       {
         name: 'Coconut Coast Organization of REALTORS®',
         desc: 'Formerly Bonita-Estero REALTORS®',
