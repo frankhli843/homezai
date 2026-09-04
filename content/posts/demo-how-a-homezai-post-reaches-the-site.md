@@ -12,36 +12,39 @@ title: >-
   site
 slug: demo-how-a-homezai-post-reaches-the-site
 excerpt: >-
+  REVISION
+  TWO.
   A
   synthetic
   demonstration
   article,
-  written
+  edited
+  a
+  second
+  time
   inside
   the
-  Homezai
-  content
   editor
-  to
-  show
-  formatting,
-  images
-  and
-  publishing.
-  It
-  is
-  removed
-  once
+  so
   the
-  walkthrough
-  is
-  recorded.
+  change
+  can
+  be
+  seen
+  reaching
+  the
+  live
+  page
+  and
+  the
+  revision
+  history.
 status: published
 author: >-
   Homezai
   Team
 publishedAt: '2026-09-04T21:27:14.079Z'
-updatedAt: '2026-09-04T21:44:52.543Z'
+updatedAt: '2026-09-04T21:46:45.122Z'
 heroImage: /blog-media/hz-demo-hero.webp
 heroImageAlt: >-
   Synthetic
