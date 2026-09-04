@@ -175,3 +175,127 @@ describe('a broken reference fails the publish rather than shipping a hole', () 
     assert.equal(plan.deletes.length, 0)
   })
 })
+
+/*
+ * These cover two defects that only appeared when a real article was saved in the real
+ * editor against production. Neither was visible to any unit test written beforehand,
+ * because both tests and fixtures had been written by hand in the shape the schema
+ * describes rather than in the shape the CMS actually writes.
+ */
+
+const EDITOR_SAVED_MD = `---
+id: ff710123-ab49-4923-915f-79b6adfb8cc8
+title: An article saved by the editor
+slug: editor-saved
+excerpt: The editor writes every optional field, and writes the empty ones as ''.
+status: published
+author: Homezai Team
+heroImage: /blog-media/hero-a1b2c3d4.jpg
+heroImageAlt: A hero image
+heroImageDecorative: false
+featured: false
+featureOrder: 10
+tags: []
+seoTitle: ''
+seoDescription: ''
+publishedAt: ''
+updatedAt: ''
+previousSlugs: []
+---
+
+Body copy.
+`
+
+const HERO = { path: 'content/media/hero-a1b2c3d4.jpg', bytes: Buffer.from([0xff, 0xd8, 0xff, 0xe0, 1]) }
+
+describe('an empty string in the frontmatter means absent, not present and invalid', () => {
+  test('the fields the editor left blank do not survive parsing as empty strings', () => {
+    const post = parsePostFile(EDITOR_SAVED_MD, 'content/posts/editor-saved.md')
+    for (const field of ['seoTitle', 'seoDescription', 'publishedAt', 'updatedAt']) {
+      assert.equal(post[field], undefined, `${field} came through as ${JSON.stringify(post[field])}`)
+    }
+    assert.equal(post.tags, undefined)
+    assert.equal(post.previousSlugs, undefined)
+  })
+
+  test('an article saved by the editor publishes rather than failing validation', () => {
+    const plan = planPublishSync({
+      files: [{ path: 'content/posts/editor-saved.md', contents: EDITOR_SAVED_MD }],
+      media: [HERO],
+      now: '2026-09-04T17:00:00.000Z',
+    })
+    assert.deepEqual(plan.errors, [], JSON.stringify(plan.errors))
+    assert.ok(plan.writes.some((w) => w.path === 'content/posts/editor-saved.md'))
+  })
+})
+
+describe('the publish date is stamped once and then never moves', () => {
+  const first = planPublishSync({
+    files: [{ path: 'content/posts/editor-saved.md', contents: EDITOR_SAVED_MD }],
+    media: [HERO],
+    now: '2026-09-04T17:00:00.000Z',
+  })
+  const published = first.writes.find((w) => w.path === 'content/posts/editor-saved.md').contents
+
+  test('a first publish stamps the date the editor left blank', () => {
+    const parsed = parsePostFile(published, 'x')
+    assert.equal(parsed.publishedAt, '2026-09-04T17:00:00.000Z')
+    assert.equal(parsed.updatedAt, '2026-09-04T17:00:00.000Z')
+  })
+
+  test('publishing the same article again a week later does not move either date', () => {
+    const again = planPublishSync({
+      files: [{ path: 'content/posts/editor-saved.md', contents: EDITOR_SAVED_MD }],
+      media: [HERO],
+      existingPosts: [{ path: 'content/posts/editor-saved.md', contents: published }],
+      now: '2026-09-11T09:00:00.000Z',
+    })
+    const parsed = parsePostFile(
+      again.writes.find((w) => w.path === 'content/posts/editor-saved.md').contents,
+      'x',
+    )
+    assert.equal(parsed.publishedAt, '2026-09-04T17:00:00.000Z')
+    assert.equal(parsed.updatedAt, '2026-09-04T17:00:00.000Z')
+  })
+
+  test('an unchanged article produces byte identical output, so the sync cannot loop', () => {
+    const again = planPublishSync({
+      files: [{ path: 'content/posts/editor-saved.md', contents: EDITOR_SAVED_MD }],
+      media: [HERO],
+      existingPosts: [{ path: 'content/posts/editor-saved.md', contents: published }],
+      now: '2026-09-11T09:00:00.000Z',
+    })
+    assert.equal(again.writes.find((w) => w.path === 'content/posts/editor-saved.md').contents, published)
+  })
+
+  test('an edit moves the update date but leaves the publish date alone', () => {
+    const edited = EDITOR_SAVED_MD.replace('Body copy.', 'Body copy, corrected.')
+    const again = planPublishSync({
+      files: [{ path: 'content/posts/editor-saved.md', contents: edited }],
+      media: [HERO],
+      existingPosts: [{ path: 'content/posts/editor-saved.md', contents: published }],
+      now: '2026-09-11T09:00:00.000Z',
+    })
+    const parsed = parsePostFile(
+      again.writes.find((w) => w.path === 'content/posts/editor-saved.md').contents,
+      'x',
+    )
+    assert.equal(parsed.publishedAt, '2026-09-04T17:00:00.000Z')
+    assert.equal(parsed.updatedAt, '2026-09-11T09:00:00.000Z')
+  })
+
+  test('a title change also counts as an edit, not only a body change', () => {
+    const edited = EDITOR_SAVED_MD.replace('An article saved by the editor', 'A better headline')
+    const again = planPublishSync({
+      files: [{ path: 'content/posts/editor-saved.md', contents: edited }],
+      media: [HERO],
+      existingPosts: [{ path: 'content/posts/editor-saved.md', contents: published }],
+      now: '2026-09-11T09:00:00.000Z',
+    })
+    const parsed = parsePostFile(
+      again.writes.find((w) => w.path === 'content/posts/editor-saved.md').contents,
+      'x',
+    )
+    assert.equal(parsed.updatedAt, '2026-09-11T09:00:00.000Z')
+  })
+})
