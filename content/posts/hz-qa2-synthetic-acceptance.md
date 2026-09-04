@@ -7,26 +7,29 @@ title: >-
   article
 slug: hz-qa2-synthetic-acceptance
 excerpt: >-
+  REVISION
+  TWO.
   Synthetic
   QA
   content
-  created
+  edited
   in
   the
   production
   editor
   to
-  verify
+  prove
+  an
+  update
+  creates
+  revision
+  history
+  and
+  reaches
   the
-  Homezai
-  publishing
-  pipeline
-  end
-  to
-  end.
-  It
-  is
-  removed
+  live
+  article.
+  Removed
   once
   the
   evidence
@@ -37,7 +40,7 @@ author: >-
   Homezai
   Team
 publishedAt: '2026-09-04T19:19:25.261Z'
-updatedAt: '2026-09-04T19:19:25.261Z'
+updatedAt: '2026-09-04T19:22:32.375Z'
 heroImage: /blog-media/hz-qa2-hero.webp
 heroImageAlt: >-
   A
