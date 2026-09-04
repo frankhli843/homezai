@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow">
+    <title>Article history</title>
+    <link rel="icon" type="image/svg+xml" href="/homezai-favicon.svg" />
+    <!--
+      Article history, which the editor itself does not provide.
+
+      There is no privilege here that the editor does not already have. Every request
+      carries the signed in publisher's own GitHub token, so somebody who cannot read
+      the private content repository sees the same 404 they would see anywhere else,
+      and somebody who can read but not write is refused on restore by GitHub rather
+      than by this page.
+    -->
+    <style>
+      :root {
+        --blue: #3B6CF6;
+        --ink: #0F172A;
+        --muted: #64748B;
+        --line: #E2E8F0;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        color: var(--ink);
+        background: #F8FAFC;
+        line-height: 1.6;
+      }
+      main { max-width: 860px; margin: 0 auto; padding: 32px 20px 80px; }
+      h1 { font-size: 28px; margin: 0 0 4px; letter-spacing: -0.02em; }
+      p.lede { color: var(--muted); margin: 0 0 28px; }
+      a { color: var(--blue); }
+      .card {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 20px;
+        margin-bottom: 16px;
+      }
+      label { display: block; font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+      input, select {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        font: inherit;
+        background: #fff;
+      }
+      button {
+        font: inherit;
+        font-weight: 600;
+        padding: 10px 16px;
+        border-radius: 10px;
+        border: 1px solid var(--blue);
+        background: var(--blue);
+        color: #fff;
+        cursor: pointer;
+        min-height: 44px;
+      }
+      button.secondary { background: #fff; color: var(--blue); }
+      button:disabled { opacity: 0.5; cursor: default; }
+      button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible {
+        outline: 3px solid #93C5FD;
+        outline-offset: 2px;
+      }
+      ol { list-style: none; margin: 0; padding: 0; }
+      li.revision {
+        border-top: 1px solid var(--line);
+        padding: 14px 0;
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+        flex-wrap: wrap;
+      }
+      li.revision:first-child { border-top: 0; }
+      .when { font-weight: 600; }
+      .meta { color: var(--muted); font-size: 14px; }
+      .grow { flex: 1 1 260px; min-width: 0; }
+      .status { padding: 12px 14px; border-radius: 10px; margin-bottom: 16px; }
+      .status.error { background: #FEF2F2; color: #991B1B; border: 1px solid #FECACA; }
+      .status.ok { background: #F0FDF4; color: #166534; border: 1px solid #BBF7D0; }
+      .status.info { background: #EFF6FF; color: #1E40AF; border: 1px solid #BFDBFE; }
+      pre {
+        background: #0F172A;
+        color: #E2E8F0;
+        padding: 16px;
+        border-radius: 10px;
+        overflow: auto;
+        max-height: 420px;
+        font-size: 13px;
+      }
+      .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
+      .row > .grow { flex: 1 1 220px; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Article history</h1>
+      <p class="lede">
+        Every save the editor makes is kept. Pick an article to see its versions, read
+        any of them, and put one back. <a href="/admin/">Back to the editor</a>
+      </p>
+
+      <div id="status" class="status info" role="status" aria-live="polite">Checking your sign in...</div>
+
+      <div class="card">
+        <div class="row">
+          <div class="grow">
+            <label for="slug">Article web address</label>
+            <input id="slug" name="slug" placeholder="how-homezai-routes-a-showing" autocomplete="off" />
+          </div>
+          <div><button id="load" type="button">Show history</button></div>
+        </div>
+      </div>
+
+      <div class="card" id="results" hidden>
+        <ol id="revisions"></ol>
+      </div>
+
+      <div class="card" id="preview" hidden>
+        <h2 id="preview-title" style="font-size: 18px; margin-top: 0"></h2>
+        <pre id="preview-body"></pre>
+        <button id="restore" type="button">Put this version back</button>
+        <button id="close-preview" class="secondary" type="button">Close</button>
+      </div>
+    </main>
+
+    <script type="module">
+      import {
+        historyRequest,
+        versionRequest,
+        restoreRequest,
+        summariseCommits,
+        describeFailure,
+      } from '/admin/revisions.js'
+
+      const REPO = window.__HOMEZAI_CONTENT_REPO__ || 'frankhli843/homezai-content'
+      const BRANCH = 'main'
+
+      const el = (id) => document.getElementById(id)
+      const statusEl = el('status')
+
+      function say(kind, message) {
+        statusEl.className = `status ${kind}`
+        statusEl.textContent = message
+      }
+
+      /*
+       * The editor already holds a token. Rather than asking for a second one, look for
+       * it in the storage the editor writes, and only prompt when there is nothing to
+       * find. The token never leaves this browser and is never sent anywhere except
+       * api.github.com.
+       */
+      function findToken() {
+        const shape = /^(gh[pousr]_[A-Za-z0-9]{16,}|github_pat_[A-Za-z0-9_]{20,})$/
+        for (const store of [window.sessionStorage, window.localStorage]) {
+          for (let i = 0; i < store.length; i += 1) {
+            const raw = store.getItem(store.key(i))
+            if (!raw) continue
+            if (shape.test(raw.trim())) return raw.trim()
+            try {
+              const parsed = JSON.parse(raw)
+              for (const value of Object.values(parsed || {})) {
+                if (typeof value === 'string' && shape.test(value.trim())) return value.trim()
+              }
+            } catch {
+              // not JSON, nothing to look inside
+            }
+          }
+        }
+        return null
+      }
+
+      let token = findToken()
+      let currentSlug = null
+      let selected = null
+
+      if (token) {
+        say('ok', 'Signed in. Enter an article address to see its history.')
+      } else {
+        say(
+          'info',
+          'Sign in to the editor first so this page can reuse it, or paste an access token below.',
+        )
+        const prompted = window.prompt(
+          'Paste the access token Frank gave you. It stays in this browser and is only sent to GitHub.',
+        )
+        if (prompted && prompted.trim()) {
+          token = prompted.trim()
+          window.sessionStorage.setItem('homezai.revisions.token', token)
+          say('ok', 'Signed in for this browser tab.')
+        }
+      }
+
+      async function call(request) {
+        const response = await fetch(request.url, {
+          method: request.method,
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/vnd.github+json',
+            'X-GitHub-Api-Version': '2022-11-28',
+          },
+          body: request.body ? JSON.stringify(request.body) : undefined,
+        })
+        let payload = null
+        try {
+          payload = await response.json()
+        } catch {
+          payload = null
+        }
+        if (!response.ok) {
+          const failure = describeFailure(response.status, payload)
+          const error = new Error(failure.message)
+          error.code = failure.code
+          throw error
+        }
+        return payload
+      }
+
+      el('load').addEventListener('click', async () => {
+        const slug = el('slug').value.trim()
+        if (!slug) {
+          say('error', 'Enter the article web address, the part after /blog/.')
+          return
+        }
+        if (!token) {
+          say('error', 'No access token. Sign in to the editor first.')
+          return
+        }
+        currentSlug = slug
+        say('info', 'Loading history...')
+        el('results').hidden = true
+        el('preview').hidden = true
+        try {
+          const commits = summariseCommits(
+            await call(historyRequest({ repo: REPO, branch: BRANCH, slug })),
+          )
+          const list = el('revisions')
+          list.replaceChildren()
+          if (commits.length === 0) {
+            say('info', 'No history for that address yet.')
+            return
+          }
+          for (const [index, commit] of commits.entries()) {
+            const item = document.createElement('li')
+            item.className = 'revision'
+            const info = document.createElement('div')
+            info.className = 'grow'
+            const when = document.createElement('div')
+            when.className = 'when'
+            when.textContent = commit.when
+              ? new Date(commit.when).toLocaleString('en-US', { timeZoneName: 'short' })
+              : commit.shortRef
+            const meta = document.createElement('div')
+            meta.className = 'meta'
+            meta.textContent = `${index === 0 ? 'Current version. ' : ''}${commit.message.split('\n')[0]} (${commit.shortRef})`
+            info.append(when, meta)
+            const view = document.createElement('button')
+            view.type = 'button'
+            view.className = 'secondary'
+            view.textContent = index === 0 ? 'View current' : 'View this version'
+            view.addEventListener('click', () => showVersion(commit))
+            item.append(info, view)
+            list.append(item)
+          }
+          el('results').hidden = false
+          say('ok', `${commits.length} version${commits.length === 1 ? '' : 's'} of ${slug}.`)
+        } catch (error) {
+          say('error', error.message)
+        }
+      })
+
+      async function showVersion(commit) {
+        say('info', 'Loading that version...')
+        try {
+          const payload = await call(versionRequest({ repo: REPO, slug: currentSlug, ref: commit.ref }))
+          selected = { commit, base64: payload.content.replace(/\n/g, '') }
+          el('preview-title').textContent = `Version from ${
+            commit.when ? new Date(commit.when).toLocaleString() : commit.shortRef
+          }`
+          el('preview-body').textContent = new TextDecoder().decode(
+            Uint8Array.from(atob(selected.base64), (c) => c.charCodeAt(0)),
+          )
+          el('preview').hidden = false
+          el('preview').scrollIntoView({ behavior: 'smooth', block: 'start' })
+          say('ok', 'Read it, then put it back if you want it.')
+        } catch (error) {
+          say('error', error.message)
+        }
+      }
+
+      el('close-preview').addEventListener('click', () => {
+        el('preview').hidden = true
+      })
+
+      el('restore').addEventListener('click', async () => {
+        if (!selected) return
+        const confirmed = window.confirm(
+          'Put this version back? The current version stays in the history, so this can be undone.',
+        )
+        if (!confirmed) return
+        say('info', 'Restoring...')
+        try {
+          const head = await call(versionRequest({ repo: REPO, slug: currentSlug, ref: BRANCH }))
+          await call(
+            restoreRequest({
+              repo: REPO,
+              branch: BRANCH,
+              slug: currentSlug,
+              contentsBase64: selected.base64,
+              currentSha: head.sha,
+              shortRef: selected.commit.shortRef,
+            }),
+          )
+          say(
+            'ok',
+            'Restored. If the article is published it will be live on homezai.com in about a minute.',
+          )
+          el('preview').hidden = true
+        } catch (error) {
+          say('error', error.message)
+        }
+      })
+    </script>
+  </body>
+</html>

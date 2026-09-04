@@ -5,10 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "node scripts/build-content.mjs && vite build && vite build --ssr src/entry-server.jsx --outDir dist-ssr && node scripts/prerender.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "node --test test/*.test.js"
+    "test": "node --test test/*.test.js",
+    "build:content": "node scripts/build-content.mjs",
+    "publish-sync": "node scripts/publish-sync.mjs"
   },
   "dependencies": {
     "react": "^19.2.4",
@@ -17,6 +19,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
+    "@sveltia/cms": "^0.205.3",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.0",
@@ -24,6 +27,9 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.4.0",
+    "js-yaml": "^5.4.1",
+    "markdown-it": "^15.0.1",
+    "sharp": "^0.35.4",
     "vite": "^8.0.0"
   }
 }

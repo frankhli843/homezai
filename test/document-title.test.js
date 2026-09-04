@@ -5,7 +5,15 @@ import path from 'node:path'
 import test from 'node:test'
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
+/*
+ * Page components are no longer all declared in App.jsx: the blog index, the article
+ * page and the not found page live in Blog.jsx. The guard is about every routed page
+ * setting its own title, so it reads both files rather than assuming one.
+ */
 const appSource = readFileSync(path.join(repoRoot, 'src', 'App.jsx'), 'utf8')
+const pageSources = [appSource, readFileSync(path.join(repoRoot, 'src', 'Blog.jsx'), 'utf8')].join(
+  '\n',
+)
 const indexHtml = readFileSync(path.join(repoRoot, 'index.html'), 'utf8')
 
 /*
@@ -37,17 +45,17 @@ function routedComponents() {
  * its opening brace so a nested function or JSX block cannot end it early.
  */
 function functionBody(name) {
-  const start = appSource.indexOf(`function ${name}(`)
+  const start = pageSources.indexOf(`function ${name}(`)
   assert.notEqual(start, -1, `App.jsx declares no function ${name}`)
-  const open = appSource.indexOf('{', start)
+  const open = pageSources.indexOf('{', start)
   assert.notEqual(open, -1, `function ${name} has no body`)
   let depth = 0
-  for (let i = open; i < appSource.length; i += 1) {
-    const ch = appSource[i]
+  for (let i = open; i < pageSources.length; i += 1) {
+    const ch = pageSources[i]
     if (ch === '{') depth += 1
     else if (ch === '}') {
       depth -= 1
-      if (depth === 0) return appSource.slice(start, i + 1)
+      if (depth === 0) return pageSources.slice(start, i + 1)
     }
   }
   throw new Error(`function ${name} is never closed`)

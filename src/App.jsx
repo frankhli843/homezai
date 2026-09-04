@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import './App.css'
 import { trackPageView, trackEvent } from './analytics'
 import { integrationCategories } from './integrationsData'
+import { ArticlePage, BlogIndexPage, FeaturedArticles, NotFoundPage } from './Blog.jsx'
 import {
   HOMEZAI_WORDMARK,
   HOMEZAI_WORDMARK_ALT,
@@ -56,6 +57,7 @@ function Navbar() {
           <img src={`${BASE}${HOMEZAI_WORDMARK.replace(/^\//, '')}`} alt={HOMEZAI_WORDMARK_ALT} width={HOMEZAI_WORDMARK_WIDTH} height={HOMEZAI_WORDMARK_HEIGHT} className="logo-img" />
         </Link>
         <div className="nav-links">
+          <Link to="/blog/">Blog</Link>
           <Link to="/#features">Features</Link>
           <Link to="/#benefits">Benefits</Link>
           <Link to="/integrations">Integrations</Link>
@@ -93,6 +95,7 @@ function Footer() {
             <Link to="/#features">Features</Link>
             <Link to="/pricing">Pricing</Link>
             <Link to="/integrations">Integrations</Link>
+            <Link to="/blog/">Blog</Link>
             <Link to="/contact">Schedule a Demo</Link>
             <Link to="/contact">Talk to Sales</Link>
           </div>
@@ -338,6 +341,9 @@ function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Featured articles. Renders nothing when no article is flagged for the home page. */}
+      <FeaturedArticles />
 
       {/* CTA Section */}
       <section id="demo" className="cta-section">
@@ -1366,6 +1372,9 @@ function App() {
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/accessibility" element={<AccessibilityPage />} />
         <Route path="/dpa" element={<DpaPage />} />
+        <Route path="/blog" element={<BlogIndexPage />} />
+        <Route path="/blog/:slug" element={<ArticlePage />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
       <Footer />
     </div>

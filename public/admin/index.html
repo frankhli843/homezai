@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow">
+    <title>Homezai content editor</title>
+    <link rel="icon" type="image/svg+xml" href="/homezai-favicon.svg" />
+    <!--
+      This page is public and inert on purpose. It holds no credential and grants
+      nothing. The editor talks straight to api.github.com with the signed in
+      publisher's own token, so GitHub is the thing that decides what may be read and
+      written, not this markup and not anything React renders.
+
+      The editor bundle is served from homezai.com rather than a third party CDN. A
+      page that handles a GitHub token should not load its own code from a host we do
+      not control, and pinning it here means the version is whatever package-lock.json
+      says it is.
+    -->
+    <style>
+      html, body { margin: 0; padding: 0; height: 100%; }
+      .cms-boot {
+        font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        color: #64748B;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        text-align: center;
+        padding: 24px;
+        box-sizing: border-box;
+      }
+    </style>
+  </head>
+  <body>
+    <noscript>
+      <div class="cms-boot">The Homezai content editor needs JavaScript enabled.</div>
+    </noscript>
+    <div class="cms-boot" id="cms-boot">Loading the Homezai content editor...</div>
+    <script src="/admin/sveltia-cms.js" type="module"></script>
+    <script type="module">
+      // Remove the placeholder once the editor has taken over the document, and leave
+      // an honest message behind if it never does, so a failed load is visible rather
+      // than a blank page.
+      const boot = document.getElementById('cms-boot')
+      setTimeout(() => {
+        if (boot && boot.isConnected && document.querySelectorAll('body > *').length <= 3) {
+          boot.textContent =
+            'The editor did not finish loading. Reload the page, and if it keeps happening tell Frank which browser you are using.'
+        }
+      }, 15000)
+    </script>
+  </body>
+</html>
