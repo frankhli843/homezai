@@ -8,19 +8,27 @@
     <link rel="icon" type="image/svg+xml" href="/homezai-favicon.svg" />
     <!--
       This page is public and inert on purpose. It holds no credential and grants
-      nothing. The editor talks straight to api.github.com with the signed in
-      publisher's own token, so GitHub is the thing that decides what may be read and
-      written, not this markup and not anything React renders.
+      nothing, and nothing it renders is an authorization decision.
 
-      The editor bundle is served from homezai.com rather than a third party CDN. A
-      page that handles a GitHub token should not load its own code from a host we do
-      not control, and pinning it here means the version is whatever package-lock.json
-      says it is.
+      What it does is ask one question before it boots, so that a person who cannot
+      use the editor sees a sentence saying which reason applies instead of a content
+      management system that refuses everything they try. That question is a RENDERING
+      decision and is not trusted by anything: the editor's every read and write is
+      authorized again, on the Homezai backend, against the canonical Homezai Admin
+      rule, on every single request. Somebody who edited a copy of this file to force
+      the editor open would get an editor whose every request is refused.
+
+      The editor bundle is served from homezai.com rather than a third party CDN,
+      because pinning it here means the version is whatever package-lock.json says it
+      is rather than whatever a CDN served this morning.
     -->
     <style>
       html, body { margin: 0; padding: 0; height: 100%; }
-      .cms-boot {
+      body {
         font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        color: #0F172A;
+      }
+      .cms-boot {
         color: #64748B;
         display: flex;
         align-items: center;
@@ -30,58 +38,242 @@
         padding: 24px;
         box-sizing: border-box;
       }
+      .cms-state {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 24px;
+        box-sizing: border-box;
+        background: #F8FAFC;
+      }
+      .cms-state__card {
+        max-width: 34rem;
+        text-align: center;
+      }
+      .cms-state__card h1 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin: 0 0 0.75rem;
+      }
+      .cms-state__card p {
+        margin: 0 0 1.5rem;
+        color: #64748B;
+        line-height: 1.65;
+      }
+      .cms-state__card a,
+      .cms-state__card button {
+        display: inline-block;
+        font: inherit;
+        font-weight: 600;
+        color: #FFFFFF;
+        background: #3B6CF6;
+        border: 0;
+        border-radius: 8px;
+        padding: 0.7rem 1.4rem;
+        cursor: pointer;
+        text-decoration: none;
+      }
+      .cms-state__card a:hover,
+      .cms-state__card button:hover { background: #2F58CC; }
     </style>
   </head>
   <body>
     <noscript>
       <div class="cms-boot">The Homezai content editor needs JavaScript enabled.</div>
     </noscript>
-    <div class="cms-boot" id="cms-boot">Loading the Homezai content editor...</div>
-    <script src="/admin/sveltia-cms.js" type="module"></script>
-    <!--
-      Replaces the editor's default Preview pane, which is a labelled dump of every
-      field, with the article as a reader will actually see it. Built from src/admin/
-      by vite.admin.config.js so it uses the site's own markdown renderer and the
-      site's own stylesheet rather than a second copy of either.
-    -->
-    <script src="/admin/preview.js" type="module"></script>
+    <div class="cms-boot" id="cms-boot">Checking your Homezai access...</div>
+
     <script type="module">
       /*
-       * Take the placeholder down the moment the editor paints something of its own.
-       * The first version waited on a timer and counted body children, and against
-       * production that left "Loading the Homezai content editor..." sitting above the
-       * sign in screen, because the editor mounts its own root rather than replacing
-       * the body. Watching for its root is the thing that is actually true.
+       * The gate.
        *
-       * If it never appears, say so. A blank page tells a publisher nothing.
+       * Four states, kept apart because they are four different things to do next,
+       * and the editor's own generic "sign in failed" cannot tell them apart:
+       *
+       *   ok             the editor loads, and signs in without anyone typing anything
+       *   signed_out     the editor loads and offers ONE button, which is Homezai
+       *                  sign in; the popup handles the whole redirect and comes back
+       *   not_authorized a sentence saying this is about access and not about signing
+       *                  in again, because telling somebody to sign in when they are
+       *                  already signed in is the most expensive wrong answer here
+       *   unavailable    a sentence saying it is us and not them, and a retry
+       *
+       * There is deliberately no fifth state that falls back to anything. No public
+       * access, no token prompt, no cached authority, no empty editor.
        */
+      const APP_ORIGIN = 'https://app.homezai.com'
+      const STATUS_URL = APP_ORIGIN + '/api/blog-editor/status'
+
       const boot = document.getElementById('cms-boot')
 
-      const editorIsUp = () =>
-        Boolean(document.querySelector('#app, .sveltia-cms, [class*="sveltia"]')) ||
-        document.querySelectorAll('body > *').length > 3
-
-      const remove = () => {
-        if (boot && boot.isConnected) boot.remove()
+      const STATES = {
+        not_authorized: {
+          title: 'This Homezai account cannot open the blog editor',
+          body:
+            'You are signed in to Homezai, and the blog editor is limited to Homezai ' +
+            'administrators. If that should include you, ask a Homezai administrator ' +
+            'to check your access, then reload this page.',
+          action: { label: 'Reload', reload: true },
+        },
+        unavailable: {
+          title: 'The Homezai blog editor is temporarily unavailable',
+          body:
+            'This is a problem on our side, not with your account. Nothing you have ' +
+            'written has been lost, and the published blog is unaffected. Try again ' +
+            'in a few minutes.',
+          action: { label: 'Try again', reload: true },
+        },
       }
 
-      const observer = new MutationObserver(() => {
-        if (editorIsUp()) {
-          remove()
-          observer.disconnect()
-        }
-      })
-      observer.observe(document.body, { childList: true, subtree: true })
+      const renderState = (key) => {
+        const state = STATES[key]
+        document.body.innerHTML = ''
+        const wrap = document.createElement('div')
+        wrap.className = 'cms-state'
+        const card = document.createElement('div')
+        card.className = 'cms-state__card'
 
-      setTimeout(() => {
-        observer.disconnect()
-        if (editorIsUp()) {
-          remove()
-        } else if (boot && boot.isConnected) {
-          boot.textContent =
-            'The editor did not finish loading. Reload the page, and if it keeps happening tell Frank which browser you are using.'
+        const heading = document.createElement('h1')
+        heading.textContent = state.title
+        const text = document.createElement('p')
+        text.textContent = state.body
+        card.append(heading, text)
+
+        if (state.action) {
+          const button = document.createElement('button')
+          button.type = 'button'
+          button.textContent = state.action.label
+          button.addEventListener('click', () => window.location.reload())
+          card.append(button)
         }
-      }, 15000)
+
+        wrap.append(card)
+        document.body.append(wrap)
+      }
+
+      /*
+       * Ask, with the Homezai session cookie attached.
+       *
+       * homezai.com and app.homezai.com share a registrable domain, so this is a
+       * same-site request and the existing session cookie is sent. The API host is
+       * homezyai.com, a different site, and no cookie ever reaches it: the editor
+       * authenticates there with a short lived bearer token instead, which is why
+       * this probe goes to the app rather than straight to the API.
+       */
+      const probe = async () => {
+        try {
+          const response = await fetch(STATUS_URL, {
+            credentials: 'include',
+            cache: 'no-store',
+          })
+          if (!response.ok) return 'unavailable'
+          const body = await response.json()
+          return ['ok', 'signed_out', 'not_authorized', 'unavailable'].includes(body.state)
+            ? body.state
+            : 'unavailable'
+        } catch {
+          // A network failure is an outage, not a refusal. Saying "you are not
+          // authorized" here would send an administrator to ask for access they
+          // already have.
+          return 'unavailable'
+        }
+      }
+
+      /*
+       * The editor's sign in button says "Sign In with GitHub", because its backend
+       * is named github even though every request now goes to Homezai. That name is
+       * true of the plumbing and false of the experience, and the experience is what
+       * Nina reads. The editor exposes no locale hook that works in this version, so
+       * the label is corrected in the DOM.
+       *
+       * This is cosmetic and nothing depends on it. If it silently stopped working
+       * the worst outcome is a button with the wrong word on it, not a security
+       * property. `test/admin-surface.test.js` pins that it is still attempted.
+       */
+      const relabelSignIn = () => {
+        const fix = () => {
+          for (const node of document.querySelectorAll('button, a')) {
+            const text = (node.textContent || '').trim()
+            if (/^Sign In with GitHub$/i.test(text)) {
+              node.textContent = 'Sign in with Homezai'
+            }
+          }
+        }
+        fix()
+        const observer = new MutationObserver(fix)
+        observer.observe(document.body, { childList: true, subtree: true })
+      }
+
+      const bootEditor = async () => {
+        relabelSignIn()
+
+        /*
+         * Take the placeholder down the moment the editor paints something of its
+         * own. An earlier version waited on a timer and counted body children, and
+         * against production that left the loading line sitting above the sign in
+         * screen, because the editor mounts its own root rather than replacing the
+         * body. Watching for its root is the thing that is actually true.
+         */
+        const editorIsUp = () =>
+          Boolean(document.querySelector('#app, .sveltia-cms, [class*="sveltia"]')) ||
+          document.querySelectorAll('body > *').length > 3
+
+        const remove = () => {
+          if (boot && boot.isConnected) boot.remove()
+        }
+
+        const observer = new MutationObserver(() => {
+          if (editorIsUp()) {
+            remove()
+            observer.disconnect()
+          }
+        })
+        observer.observe(document.body, { childList: true, subtree: true })
+
+        setTimeout(() => {
+          observer.disconnect()
+          if (editorIsUp()) {
+            remove()
+          } else if (boot && boot.isConnected) {
+            boot.textContent =
+              'The editor did not finish loading. Reload the page, and if it keeps ' +
+              'happening tell Frank which browser you are using.'
+          }
+        }, 15000)
+
+        await import('/admin/sveltia-cms.js')
+        /*
+         * Replaces the editor's default Preview pane, which is a labelled dump of
+         * every field, with the article as a reader will actually see it. Built from
+         * src/admin/ by vite.admin.config.js so it uses the site's own markdown
+         * renderer and the site's own stylesheet rather than a second copy of either.
+         */
+        await import('/admin/preview.js')
+      }
+
+      const first = await probe()
+
+      if (first === 'ok' || first === 'signed_out') {
+        if (boot) boot.textContent = 'Loading the Homezai content editor...'
+        await bootEditor()
+
+        /*
+         * Re-ask when the tab comes back to the front.
+         *
+         * Not a security control: the backend refuses a revoked administrator on the
+         * very next request whether or not this runs. It is here so that somebody
+         * whose access was removed while the editor sat open in a background tab is
+         * told why their next save is going to fail, instead of watching it fail.
+         */
+        document.addEventListener('visibilitychange', async () => {
+          if (document.visibilityState !== 'visible') return
+          const again = await probe()
+          if (again === 'not_authorized') renderState('not_authorized')
+        })
+      } else {
+        renderState(first)
+      }
     </script>
   </body>
 </html>
