@@ -105,6 +105,17 @@
       const APP_ORIGIN = 'https://app.homezai.com'
       const STATUS_URL = APP_ORIGIN + '/api/blog-editor/status'
 
+      /*
+       * Tell the editor bundle that this page starts it, before the bundle is
+       * imported. It must be set here and not next to the `init()` call further
+       * down: the bundle decides whether to start itself while it is being
+       * evaluated, which is inside the `await import(...)`, so a flag set after
+       * that await would arrive too late to be read and too early to matter.
+       *
+       * Why this page starts it at all is explained at the `init()` call.
+       */
+      window.CMS_MANUAL_INIT = true
+
       const boot = document.getElementById('cms-boot')
 
       const STATES = {
@@ -190,13 +201,34 @@
        * This is cosmetic and nothing depends on it. If it silently stopped working
        * the worst outcome is a button with the wrong word on it, not a security
        * property. `test/admin-surface.test.js` pins that it is still attempted.
+       *
+       * The label is not the plain string it looks like. The editor formats it
+       * through its own message layer, which wraps the interpolated product name
+       * in Unicode directional isolates, so what is actually in the DOM is
+       * "Sign In with", U+2068, "GitHub", U+2069. A matcher written against the
+       * visible characters silently never fires. Read live from
+       * homezai.com/admin/ on 2026-09-06, where the codepoints of the button's
+       * own textContent came back as exactly U+2068 and U+2069.
        */
+      /* homezai:signin-label:start */
+      const homezaiSignInLabel = (raw) => {
+        // Strip the four directional isolate controls (U+2066 LRI, U+2067 RLI,
+        // U+2068 FSI, U+2069 PDI) before comparing, so the test is against the
+        // words a person reads rather than against invisible formatting.
+        const text = String(raw || '')
+          .replace(/[\u2066-\u2069]/g, '')
+          .replace(/\s+/g, ' ')
+          .trim()
+        return /^sign in with github$/i.test(text) ? 'Sign in with Homezai' : null
+      }
+      /* homezai:signin-label:end */
+
       const relabelSignIn = () => {
         const fix = () => {
           for (const node of document.querySelectorAll('button, a')) {
-            const text = (node.textContent || '').trim()
-            if (/^Sign In with GitHub$/i.test(text)) {
-              node.textContent = 'Sign in with Homezai'
+            const replacement = homezaiSignInLabel(node.textContent)
+            if (replacement && node.textContent !== replacement) {
+              node.textContent = replacement
             }
           }
         }
@@ -248,8 +280,35 @@
          * every field, with the article as a reader will actually see it. Built from
          * src/admin/ by vite.admin.config.js so it uses the site's own markdown
          * renderer and the site's own stylesheet rather than a second copy of either.
+         *
+         * Imported BEFORE init() on purpose: it calls registerPreviewTemplate, and
+         * the editor only reads the registry when it mounts.
          */
         await import('/admin/preview.js')
+
+        /*
+         * Mount it. This call is the whole reason the editor appears at all, and
+         * it is not optional bookkeeping.
+         *
+         * The bundle ends with, verbatim:
+         *
+         *   !window.CMS_MANUAL_INIT && (document.currentScript || $9) && W9()
+         *
+         * where W9 is init and $9 is a `document.querySelector` for a
+         * `script[src$="...cms.js"]` TAG. Task 11 loaded the bundle from a static
+         * script element pointing at that file, so the query found a tag and the
+         * editor started itself. Loading it with `import()` instead,
+         * which is what lets this page ask about access first, leaves
+         * `document.currentScript` null AND leaves no tag to find, so both operands
+         * are falsy and the editor never starts. It loads, it exports, it renders
+         * nothing, and there is no error anywhere to say so: production sat on
+         * "Loading the Homezai content editor..." and then timed out.
+         *
+         * `CMS_MANUAL_INIT` is declared at the top of this module rather than here,
+         * because the auto-init check runs while the bundle is being evaluated, so
+         * setting it after the `await` would be a coin flip rather than a decision.
+         */
+        window.CMS.init()
       }
 
       const first = await probe()

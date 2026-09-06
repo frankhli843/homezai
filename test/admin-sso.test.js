@@ -215,3 +215,117 @@ describe('the sign in button does not say GitHub to a Homezai administrator', ()
     assert.match(html, /cosmetic and nothing depends on it/i)
   })
 })
+
+/*
+ * These exist because the change above shipped to production and the editor did
+ * not appear. Everything else worked: the access probe answered `ok`, the relay
+ * minted a session, the broker served the private repository. The page loaded
+ * two megabytes of editor and then rendered nothing, with no console error, no
+ * failed request and no non-200 anywhere, because nobody had started it.
+ *
+ * The bundle's last statement is, verbatim:
+ *
+ *   !window.CMS_MANUAL_INIT && (document.currentScript || $9) && W9()
+ *
+ * W9 is init. $9 is a `document.querySelector` for a `script[src$="...cms.js"]`
+ * tag. Task 11 had that tag, so the editor started itself. Replacing the tag
+ * with `import()` removed the only two things that condition looks at, and the
+ * gate added in the same change forbids putting the tag back, so the only
+ * correct shape is to start it explicitly.
+ */
+describe('the editor is actually started, not merely downloaded', () => {
+  const script = html.slice(html.indexOf('<script type="module">'))
+
+  test('the page calls the editor init entry point', () => {
+    assert.match(
+      script,
+      /window\.CMS\.init\(\)/,
+      'the page imports the editor bundle and never starts it, which renders nothing',
+    )
+  })
+
+  test('manual init is declared BEFORE the bundle is imported, not after', () => {
+    const flag = script.indexOf('window.CMS_MANUAL_INIT = true')
+    const bundleImport = script.search(/import\((?:'|")\/admin\/sveltia-cms\.js(?:'|")\)/)
+    const init = script.indexOf('window.CMS.init()')
+
+    assert.ok(flag !== -1, 'the page never declares that it starts the editor itself')
+    assert.ok(bundleImport !== -1, 'the page never imports the editor bundle')
+    assert.ok(init !== -1, 'the page never starts the editor')
+
+    // The bundle reads the flag while it is being evaluated, so declaring it
+    // after the await would be a race the page loses every time.
+    assert.ok(
+      flag < bundleImport,
+      'the manual-init flag is set after the import, so the bundle cannot read it',
+    )
+    assert.ok(init > bundleImport, 'the editor is started before it is imported')
+  })
+
+  test('the preview is registered before the editor mounts', () => {
+    const preview = script.search(/import\((?:'|")\/admin\/preview\.js(?:'|")\)/)
+    const init = script.indexOf('window.CMS.init()')
+    assert.ok(preview !== -1, 'the page never imports the article preview')
+    assert.ok(
+      preview < init,
+      'the preview registers after the editor mounts, so the reader view is never used',
+    )
+  })
+})
+
+/*
+ * The label correction is cosmetic, but it shipped broken for a reason worth
+ * pinning: the string in the DOM is not the string on the screen. The editor
+ * formats the button through its own message layer, which wraps the product
+ * name in Unicode directional isolates, so the live text is
+ * "Sign In with", U+2068, "GitHub", U+2069. The first version matched
+ * /^Sign In with GitHub$/ and therefore never fired anywhere.
+ *
+ * This runs the page's own matcher rather than grepping for the replacement
+ * string, because a grep for "Sign in with Homezai" passes just as happily when
+ * the matcher can never reach it.
+ */
+describe('the sign in label matcher handles the string the editor really renders', () => {
+  const source = html.slice(
+    html.indexOf('/* homezai:signin-label:start */'),
+    html.indexOf('/* homezai:signin-label:end */'),
+  )
+
+  test('the matcher can be extracted, so this test cannot silently pass on nothing', () => {
+    assert.ok(source.length > 0, 'the label matcher markers are gone from the page')
+    assert.match(source, /const homezaiSignInLabel/)
+  })
+
+  // Compiled per test rather than once for the block, so that losing the markers
+  // fails the one test that is about the markers instead of cancelling the four
+  // that are about the behaviour.
+  const matcher = () => new Function(`${source}; return homezaiSignInLabel`)()
+  const homezaiSignInLabel = (value) => matcher()(value)
+
+  test('the production string, isolates and all, is corrected', () => {
+    // Exactly what document.querySelector('button').textContent returned on
+    // https://homezai.com/admin/ on 2026-09-06.
+    const live = 'Sign In with \u2068GitHub\u2069'
+    assert.equal(homezaiSignInLabel(live), 'Sign in with Homezai')
+  })
+
+  test('the plain string is corrected too, so the fix is a widening', () => {
+    assert.equal(homezaiSignInLabel('Sign In with GitHub'), 'Sign in with Homezai')
+  })
+
+  test('every isolate control is stripped, not just the two seen live', () => {
+    for (const [open, close] of [['\u2066', '\u2069'], ['\u2067', '\u2069'], ['\u2068', '\u2069']]) {
+      assert.equal(
+        homezaiSignInLabel(`Sign In with ${open}GitHub${close}`),
+        'Sign in with Homezai',
+        `an isolate pair was not stripped: ${open.codePointAt(0).toString(16)}`,
+      )
+    }
+  })
+
+  test('unrelated labels are left alone', () => {
+    for (const other of ['Sign out', 'Save', 'GitHub', 'Sign In with Google', '']) {
+      assert.equal(homezaiSignInLabel(other), null, `it rewrote an unrelated label: ${other}`)
+    }
+  })
+})
