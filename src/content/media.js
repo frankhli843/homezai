@@ -103,14 +103,15 @@ export function validateMedia(buffer, name = '') {
 }
 
 /**
- * The published file name for an upload.
+ * The stem of the published file name: everything except the extension.
  *
- * Deterministic and derived only from the source name, never from the bytes. That is
- * what makes replacing an image an in place edit: the URL an already published article
- * and an already scraped social card point at keeps resolving.
+ * Separate from safeMediaName because the extension is decided by the bytes while the
+ * stem is decided by the name, so two files can share a stem and still publish under
+ * two different names. Comparing stems is how the publish step recognises that the name
+ * an article used and the name a file was uploaded under are the same name written two
+ * ways, which is what lets a failed publish say which file it did find.
  */
-export function safeMediaName(sourceName, type) {
-  const extension = EXTENSION_FOR_TYPE[type] || '.jpg'
+export function mediaNameStem(sourceName) {
   const basename = String(sourceName || '')
     .split(/[/\\]/)
     .pop()
@@ -121,5 +122,16 @@ export function safeMediaName(sourceName, type) {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
-  return `${cleaned || 'image'}${extension}`
+  return cleaned || 'image'
+}
+
+/**
+ * The published file name for an upload.
+ *
+ * Deterministic and derived only from the source name, never from the bytes. That is
+ * what makes replacing an image an in place edit: the URL an already published article
+ * and an already scraped social card point at keeps resolving.
+ */
+export function safeMediaName(sourceName, type) {
+  return `${mediaNameStem(sourceName)}${EXTENSION_FOR_TYPE[type] || '.jpg'}`
 }
