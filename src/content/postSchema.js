@@ -37,8 +37,29 @@ export const RESERVED_SLUGS = Object.freeze([
 /** A slug is lowercase alphanumerics in hyphen separated groups, and nothing else. */
 const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 
-/** Hero images must be site local assets emitted by the media pipeline. */
-const LOCAL_MEDIA_PATTERN = /^\/blog-media\/[A-Za-z0-9][A-Za-z0-9._-]*$/
+/*
+ * Hero and body images must be site local assets emitted by the media pipeline.
+ *
+ * The rule this expresses is "exactly one file name under /blog-media/", not a
+ * whitelist of tidy characters. The editor keeps whatever a person called the file they
+ * uploaded, so a real reference carries spaces, capitals, underscores, accents and
+ * percent escapes, and a character whitelist rejected those with the words "never a
+ * remote or hotlinked url" for a file that was neither.
+ *
+ * What must never pass is a second path segment or an address that leaves the site, so
+ * a slash, a backslash, a query, a fragment, a quote, an angle bracket, a backtick, a
+ * control character, a leading space and the bare "." and ".." are all refused, and the
+ * string has to start with the prefix. The quotes and brackets are not what makes the
+ * rule correct; they are refused because no real file name needs them either.
+ *
+ * Nothing downstream builds a filesystem path out of this value. The publish step
+ * matches it against the uploads it indexed and writes under the name IT derived, so a
+ * reference that answers to no upload resolves to nothing and refuses the publish.
+ */
+const MEDIA_NAME_FORBIDDEN = '/\\\\?#<>"\'`\\u0000-\\u001f'
+const LOCAL_MEDIA_PATTERN = new RegExp(
+  `^/blog-media/(?!\\.{1,2}$)[^\\s${MEDIA_NAME_FORBIDDEN}][^${MEDIA_NAME_FORBIDDEN}]*$`,
+)
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
