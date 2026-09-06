@@ -131,6 +131,26 @@ if (existsSync(join(dist, 'admin/preview.js'))) {
     !/<script src="\/admin\/(sveltia-cms|preview)\.js"/.test(adminPage),
     'the editor page loads the editor from a static tag, so it would run before the access check',
   )
+  /*
+   * ...and, because the tag is gone, the page has to start the editor itself.
+   *
+   * The three checks above were all true of the build that shipped on 2026-09-06
+   * and rendered nothing in production. The bundle only auto-starts when it can
+   * find `document.currentScript` or its own `<script>` tag, and an `import()`
+   * leaves neither, so the editor downloaded, exported its API, and mounted
+   * nothing. There was no error to catch: every asset was 200 and every check
+   * here passed. The flag has to be set before the import, because the bundle
+   * reads it while it is being evaluated.
+   */
+  const manualInit = adminPage.indexOf('CMS_MANUAL_INIT')
+  const bundleImport = adminPage.search(/import\((?:'|")\/admin\/sveltia-cms\.js(?:'|")\)/)
+  const init = adminPage.search(/CMS\.init\(\)/)
+  check(init !== -1, 'the editor page imports the editor and never starts it, so it renders nothing')
+  check(
+    manualInit !== -1 && manualInit < bundleImport,
+    'the editor page does not claim manual init before importing the bundle, so the flag arrives too late',
+  )
+  check(init > bundleImport, 'the editor page starts the editor before importing it')
 }
 
 /*
