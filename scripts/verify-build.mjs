@@ -108,9 +108,28 @@ if (existsSync(join(dist, 'admin/preview.js'))) {
     preview.includes('.article-body'),
     'the built preview does not carry the site stylesheet, so it would not look like the article',
   )
+  /*
+   * A dynamic import rather than a static tag, because the editor page now asks
+   * whether the visitor may use it before loading two megabytes of editor. Both the
+   * editor and its preview are imported after that answer, so a static tag would be
+   * the bug rather than the requirement, and the third check below is what says so.
+   *
+   * What still has to be true, and is what the first check is for, is that the built
+   * page loads the preview that was just built for it, rather than falling back to
+   * the editor's own labelled dump of every field.
+   */
+  const adminPage = readFileSync(join(dist, 'admin/index.html'), 'utf8')
   check(
-    /<script src="\/admin\/preview\.js"/.test(readFileSync(join(dist, 'admin/index.html'), 'utf8')),
+    /import\((?:'|")\/admin\/preview\.js(?:'|")\)/.test(adminPage),
     'the editor page does not load the article preview that was built for it',
+  )
+  check(
+    /import\((?:'|")\/admin\/sveltia-cms\.js(?:'|")\)/.test(adminPage),
+    'the editor page does not load the editor bundle',
+  )
+  check(
+    !/<script src="\/admin\/(sveltia-cms|preview)\.js"/.test(adminPage),
+    'the editor page loads the editor from a static tag, so it would run before the access check',
   )
 }
 

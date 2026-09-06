@@ -199,8 +199,36 @@ describe('the editor previews the article a reader would see', () => {
   const html = existsSync(indexPath) ? readFileSync(indexPath, 'utf8') : ''
   const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'))
 
+  /*
+   * The preview and the editor bundle are both imported dynamically now, rather than
+   * being two static <script src> tags. That is a consequence of the sign-in change:
+   * the page asks whether the visitor may use the editor at all before it loads two
+   * megabytes of editor, so somebody who may not gets a sentence instead of a content
+   * management system that refuses everything they try. A static tag would have
+   * loaded regardless of the answer.
+   *
+   * The property worth pinning is unchanged, and it is that the page loads the SITE's
+   * preview rather than falling back to the editor's default field dump.
+   */
   test('the editor page loads the preview', () => {
-    assert.match(html, /<script src="\/admin\/preview\.js" type="module"><\/script>/)
+    assert.match(html, /import\((?:'|")\/admin\/preview\.js(?:'|")\)/)
+  })
+
+  test('the editor bundle is loaded only after the access check has answered', () => {
+    assert.match(html, /import\((?:'|")\/admin\/sveltia-cms\.js(?:'|")\)/)
+    assert.doesNotMatch(
+      html,
+      /<script src="\/admin\/sveltia-cms\.js"/,
+      'a static tag would load the editor before the page knows whether to',
+    )
+    // Ordering asserted on the CALL, not on the import statement. The import sits
+    // inside bootEditor(), which is declared before the check and invoked after it,
+    // so comparing the positions of the two literals would compare the wrong pair.
+    const check = html.indexOf('const first = await probe()')
+    const start = html.indexOf('await bootEditor()')
+    assert.ok(check !== -1, 'the page no longer runs an access check before booting')
+    assert.ok(start !== -1, 'the page no longer boots the editor through bootEditor()')
+    assert.ok(check < start, 'the editor is started before the access check answers')
   })
 
   test('the preview is built before the site build copies public/', () => {

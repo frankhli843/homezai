@@ -1,11 +1,20 @@
 # Homezai content editor.
 #
 # This file is served publicly at https://homezai.com/admin/config.yml and that is
-# fine. It contains no credential and grants nothing. Every read and every write the
-# editor performs goes to api.github.com carrying the signed in publisher's own token,
-# and GitHub decides whether it is allowed. A person without access to the content
-# repository below gets 404 from the API and can see nothing: not a draft, not its
-# body, not the media folder and not the history.
+# fine. It contains no credential and grants nothing. What it does is point the
+# editor at Homezai rather than at GitHub, which is the whole of the sign in change.
+#
+# Every read and every write the editor performs now goes to the Homezai backend at
+# the api_root below. That endpoint resolves the caller's short lived Homezai editor
+# session to a Homezai user, re-runs the canonical Homezai Admin rule against the
+# database FOR EVERY REQUEST, and only then talks to GitHub, using a credential that
+# lives on the server and is scoped to the single private content repository. The
+# browser never holds a GitHub credential of any kind, and losing Homezai Admin
+# status stops the next request rather than the next sign in.
+#
+# Nothing here is an authorization decision. This file is configuration on a static
+# page that anybody can read and edit a copy of; a person who did that would get an
+# editor whose every request is refused.
 #
 # The repository here is deliberately NOT the public site repository. Drafts live only
 # in the private one. A publish workflow copies articles whose status is "published"
@@ -17,6 +26,32 @@ backend:
   name: github
   repo: frankhli843/homezai-content
   branch: main
+
+  # Where the editor's GitHub API calls actually go. The editor appends "/api/v3" to
+  # any REST root that does not already end in it, and requires the GraphQL root to
+  # end in "/graphql", so both are written here in the form the editor will use rather
+  # than in a tidier form it would then rewrite. Those two rules were read out of the
+  # deployed editor bundle, and a backend test recomputes them and asserts each
+  # resulting URL hits a registered route.
+  api_root: https://api.dev.homezyai.com/api/v1/blog-editor/gh/api/v3
+  graphql_api_root: https://api.dev.homezyai.com/api/v1/blog-editor/gh/graphql
+
+  # Sign in. "oauth" is the only method offered, which is what removes the paste a
+  # personal access token screen entirely: there is no longer a token for anyone to
+  # create, paste, lose or forget to revoke. The one remaining method opens
+  # app.homezai.com, which is the origin the Homezai session cookie belongs to, and
+  # that page decides. An empty list is a configuration error in the editor, so this
+  # is the narrowest the surface can be made.
+  auth_methods: ['oauth']
+  base_url: https://app.homezai.com
+  auth_endpoint: api/blog-editor/authorize
+
+  # Stated rather than inferred from window.location, so the relay is handed a value
+  # that does not change with the address the editor happens to be served from. The
+  # relay matches it against its own allow list and refuses anything else before it
+  # mints a session.
+  site_domain: homezai.com
+
   commit_messages:
     create: 'Create article "{{slug}}"'
     update: 'Update article "{{slug}}"'
