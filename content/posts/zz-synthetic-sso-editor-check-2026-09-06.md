@@ -41,7 +41,7 @@ author: >-
   Homezai
   Team
 publishedAt: '2026-09-06T15:18:28.001Z'
-updatedAt: '2026-09-06T15:18:28.001Z'
+updatedAt: '2026-09-06T15:23:40.795Z'
 heroImage: /blog-media/zz-synthetic-hero.webp
 heroImageAlt: >-
   A
@@ -54,7 +54,7 @@ heroImageAlt: >-
   test
   asset.
 heroImageDecorative: false
-featured: false
+featured: true
 featureOrder: 10
 ---
 
